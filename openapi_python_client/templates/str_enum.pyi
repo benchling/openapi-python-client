@@ -1,6 +1,7 @@
+from ..extensions import Enums
 from enum import Enum
 
-class {{ enum.reference.class_name }}(str, Enum):
+class {{ enum.reference.class_name }}(Enums.KnownString):
     {% for key, value in enum.values.items() %}
     {{ key }} = "{{ value }}"
     {% endfor %}
