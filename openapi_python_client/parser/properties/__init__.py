@@ -162,6 +162,8 @@ class UnionProperty(Property):
     inner_properties: List[Property]
     template: ClassVar[str] = "union_property.pyi"
     has_properties_without_templates: bool = attr.ib(init=False)
+    discriminator_property: Optional[str]
+    discriminator_mappings: Dict[str, Property]
 
     def __attrs_post_init__(self) -> None:
         super().__attrs_post_init__()
@@ -423,15 +425,28 @@ def build_union_property(
     *, data: oai.Schema, name: str, required: bool, schemas: Schemas, parent_name: str
 ) -> Tuple[Union[UnionProperty, PropertyError], Schemas]:
     sub_properties: List[Property] = []
+    inverted_mappings = {}
+    for k, v in (data.discriminator.mapping if data.discriminator else {}).items():
+        inverted_mappings[Reference.from_ref(v).class_name] = k
+    discriminator_mappings: Dict[str, Property] = {}
     for sub_prop_data in chain(data.anyOf, data.oneOf):
         sub_prop, schemas = property_from_data(
             name=name, required=required, data=sub_prop_data, schemas=schemas, parent_name=parent_name
         )
+        if name == "entities_item":
+            print("subprop", sub_prop)
         if isinstance(sub_prop, PropertyError):
             return PropertyError(detail=f"Invalid property in union {name}", data=sub_prop_data), schemas
+
         sub_properties.append(sub_prop)
+        if data.discriminator is not None:
+            discriminated_by = inverted_mappings.get(sub_prop.reference.class_name)
+            if discriminated_by is not None:
+                discriminator_mappings[discriminated_by] = sub_prop
 
     default = convert_chain((prop._type_string for prop in sub_properties), data.default)
+    if name == "entities_item":
+        print(f"UNION ({name}): ", data)
     return (
         UnionProperty(
             name=name,
@@ -439,6 +454,8 @@ def build_union_property(
             default=default,
             inner_properties=sub_properties,
             nullable=data.nullable,
+            discriminator_property=data.discriminator.propertyName if data.discriminator else None,
+            discriminator_mappings=discriminator_mappings
         ),
         schemas,
     )
