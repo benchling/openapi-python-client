@@ -1,11 +1,18 @@
 {% macro construct(property, source, initial_value="None") %}
 {% if property.required %}
-{{ property.python_name }} = {{ property.reference.class_name }}({{ source }})
+_{{ property.python_name }} = {{ source }}
+try:
+    {{ property.python_name }} = {{ property.reference.class_name }}(_{{ property.python_name }})
+except ValueError:
+    {{ property.python_name }} = {{ property.reference.class_name }}.of_unknown(_{{ property.python_name }})
 {% else %}
 {{ property.python_name }} = {{ initial_value }}
 _{{ property.python_name }} = {{ source }}
 if _{{ property.python_name }} is not None and _{{ property.python_name }} is not UNSET:
-    {{ property.python_name }} = {{ property.reference.class_name }}(_{{ property.python_name }})
+    try:
+        {{ property.python_name }} = {{ property.reference.class_name }}(_{{ property.python_name }})
+    except ValueError:
+        {{ property.python_name }} = {{property.reference.class_name}}.of_unknown(_{{property.python_name}})
 {% endif %}
 {% endmacro %}
 
