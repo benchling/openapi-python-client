@@ -433,8 +433,6 @@ def build_union_property(
         sub_prop, schemas = property_from_data(
             name=name, required=required, data=sub_prop_data, schemas=schemas, parent_name=parent_name
         )
-        if name == "entities_item":
-            print("subprop", sub_prop)
         if isinstance(sub_prop, PropertyError):
             return PropertyError(detail=f"Invalid property in union {name}", data=sub_prop_data), schemas
 
@@ -445,8 +443,6 @@ def build_union_property(
                 discriminator_mappings[discriminated_by] = sub_prop
 
     default = convert_chain((prop._type_string for prop in sub_properties), data.default)
-    if name == "entities_item":
-        print(f"UNION ({name}): ", data)
     return (
         UnionProperty(
             name=name,
