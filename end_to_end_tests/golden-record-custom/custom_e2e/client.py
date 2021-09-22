@@ -30,9 +30,15 @@ class Client:
     def get_timeout(self) -> float:
         return self.timeout
 
-    def with_timeout(self, timeout: float) -> "Client":
-        """ Get a new client matching this one with a new timeout (in seconds) """
-        return attr.evolve(self, timeout=timeout)
+    def with_timeout(self, timeout: float, override_lower_default: bool = True) -> "Client":
+        """ Get a new client matching this one with a new timeout (in seconds)
+
+        To ignore the specified timeout value if it's lower than the default
+        timeout in the client, set override_lower_default=False
+        """
+        if override_lower_default or timeout > self.timeout:
+            return attr.evolve(self, timeout=timeout)
+        return self
 
 
 @attr.s(auto_attribs=True)
