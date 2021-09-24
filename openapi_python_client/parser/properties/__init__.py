@@ -173,7 +173,7 @@ class UnionProperty(Property):
 
     def _get_inner_type_strings(self, json: bool = False) -> List[str]:
         inner_types = [p.get_type_string(no_optional=True, json=json) for p in self.inner_properties]
-        if not json:
+        if not json and not self.has_properties_without_templates:
             inner_types.append("UnknownType")
         unique_inner_types = list(dict.fromkeys(inner_types))
         return unique_inner_types
@@ -429,6 +429,11 @@ def build_union_property(
     sub_properties: List[Property] = []
     inverted_mappings = {}
     for k, v in (data.discriminator.mapping if data.discriminator else {}).items():
+        class_name = Reference.from_ref(v).class_name
+        if class_name in inverted_mappings:
+            raise ArgumentError(
+                f"Mapping more than one name to a class is currently not supported (class: {class_name})."
+            )
         inverted_mappings[Reference.from_ref(v).class_name] = k
     discriminator_mappings: Dict[str, Property] = {}
     for sub_prop_data in chain(data.anyOf, data.oneOf):
