@@ -1,4 +1,5 @@
-from typing import Any, Dict, Type, TypeVar
+from ..extensions import NotPresentError
+from typing import cast, Any, Dict, Optional, Type, TypeVar
 
 {% if model.additional_properties %}
 from typing import List
@@ -8,6 +9,7 @@ from typing import List
 import attr
 
 from ..types import UNSET, Unset
+from ..extensions import UnknownType
 
 {% for relative in model.relative_imports %}
 {{ relative }}
@@ -20,31 +22,40 @@ from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="{{ model.reference.class_name }}")
 
-@attr.s(auto_attribs=True)
+@attr.s(auto_attribs=True, repr=False)
 class {{ model.reference.class_name }}:
     """ {{ model.description }} """
     {% for property in model.required_properties + model.optional_properties %}
     {% if property.default is none and property.required %}
-    {{ property.to_string() }}
+    _{{ property.to_string() }}
     {% endif %}
     {% endfor %}
     {% for property in model.required_properties + model.optional_properties %}
     {% if property.default is not none or not property.required %}
-    {{ property.to_string() }}
+    _{{ property.to_string() }}
     {% endif %}
     {% endfor %}
     {% if model.additional_properties %}
     additional_properties: Dict[str, {{ additional_property_type }}] = attr.ib(init=False, factory=dict)
     {% endif %}
 
+    def __repr__(self):
+        fields = []
+        {% for property in model.required_properties + model.optional_properties %}
+        fields.append("{{property.python_name}}={}".format(repr(self._{{property.python_name}})))
+        {% endfor %}
+        {% if model.additional_properties %}
+        fields.append("additional_properties={}".format(repr(self.additional_properties)))
+        {% endif %}
+        return "{{model.reference.class_name}}({})".format(", ".join(fields))
 
     def to_dict(self) -> Dict[str, Any]:
         {% for property in model.required_properties + model.optional_properties %}
         {% if property.template %}
         {% from "property_templates/" + property.template import transform %}
-        {{ transform(property, "self." + property.python_name, property.python_name) | indent(8) }}
+        {{ transform(property, "self._" + property.python_name, property.python_name) | indent(8) }}
         {% else %}
-        {{ property.python_name }} =  self.{{ property.python_name }}
+        {{ property.python_name }} =  self._{{ property.python_name }}
         {% endif %}
         {% endfor %}
 
@@ -129,3 +140,41 @@ class {{ model.reference.class_name }}:
     def __contains__(self, key: str) -> bool:
         return key in self.additional_properties
     {% endif %}
+
+{% macro required_property_type(prop) %}
+{%- if prop.nullable -%}
+Optional[{{prop.get_base_type_string()}}]
+{%- else -%}
+{{prop.get_base_type_string()}}
+{%- endif -%}
+{% endmacro %}
+
+    {% if model.additional_properties %}
+    def get(self, key, default=None) -> Optional[{{ additional_property_type }}]:
+        return self.additional_properties.get(key, default)
+    {% endif %}
+
+    {% for property in model.required_properties + model.optional_properties %}
+        {% set backing_member = "self._" + property.python_name %}
+        {% if property.required %}
+    @property
+    def {{property.python_name}}(self) -> {{required_property_type(property)}}:
+        return {{backing_member}}
+        {% else %}
+    @property
+    def {{property.python_name}}(self) -> {{required_property_type(property)}}:
+        if isinstance({{backing_member}}, Unset):
+            raise NotPresentError(self, "{{property.python_name}}")
+        return {{backing_member}}
+        {% endif %}
+
+    @{{property.python_name}}.setter
+    def {{property.python_name}}(self, value:{{required_property_type(property)}}) -> None:
+        {{backing_member}} = value
+
+        {% if not property.required %}
+    @{{property.python_name}}.deleter
+    def {{property.python_name}}(self) -> None:
+        {{backing_member}} = UNSET
+        {% endif %}
+    {% endfor %}
