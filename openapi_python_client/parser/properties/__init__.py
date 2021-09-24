@@ -183,6 +183,8 @@ class UnionProperty(Property):
         self, no_optional: bool = False, query_parameter: bool = False, json: bool = False
     ) -> List[str]:
         type_strings = self._get_inner_type_strings(json=json)
+        if not json:
+            type_strings.append("UnknownType")
         if no_optional:
             return type_strings
         if self.required:
