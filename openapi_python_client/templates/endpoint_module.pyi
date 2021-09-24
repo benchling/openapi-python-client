@@ -5,7 +5,6 @@ from attr import asdict
 
 from ...client import AuthenticatedClient, Client
 from ...types import Response
-from ...extensions import UnknownType
 
 {% for relative in endpoint.relative_imports %}
 {{ relative }}
