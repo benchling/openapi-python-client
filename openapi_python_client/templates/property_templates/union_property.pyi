@@ -9,17 +9,6 @@ def _parse_{{ property.python_name }}(data: {{ property.get_type_string(json=Tru
     if isinstance(data, Unset):
         return data
     {% endif %}
-    {% if property.discriminator_property != None %}
-    discriminator_value: str = data.get("{{property.discriminator_property}}")
-    if discriminator_value is not None:
-        {% for discriminated_by, inner_property in property.discriminator_mappings.items() %}
-        if discriminator_value == "{{discriminated_by}}":
-            {% from "property_templates/" + inner_property.template import construct %}
-            {{ construct(inner_property, "data", initial_value="UNSET") | indent(8) }}
-            return {{ property.python_name }}
-        {% endfor %}
-
-    {% endif %}
     {% for inner_property in property.inner_properties_with_template() %}
     {% if not loop.last or property.has_properties_without_templates %}
     try:
