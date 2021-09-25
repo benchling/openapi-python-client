@@ -173,7 +173,7 @@ class UnionProperty(Property):
 
     def _get_inner_type_strings(self, json: bool = False) -> List[str]:
         inner_types = [p.get_type_string(no_optional=True, json=json) for p in self.inner_properties]
-        if not json and not self.has_properties_without_templates:
+        if not json:
             inner_types.append("UnknownType")
         unique_inner_types = list(dict.fromkeys(inner_types))
         return unique_inner_types
