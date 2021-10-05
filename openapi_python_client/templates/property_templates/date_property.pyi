@@ -2,9 +2,11 @@
 {% if property.required and not property.nullable %}
 {{ property.python_name }} = isoparse({{ source }}).date()
 {% else %}
-{{ property.python_name }} = {{ initial_value }}
+{{ property.python_name }}: {{ property.get_type_string() }} = {% if not property.required and initial_value == "None" %}UNSET
+{% else %}{{ initial_value }}
+{% endif %}
 _{{ property.python_name }} = {{ source }}
-if _{{ property.python_name }} is not None:
+if _{{ property.python_name }} is not None and not isinstance(_{{ property.python_name }}, Unset):
     {{ property.python_name }} = isoparse(cast(str, _{{ property.python_name }})).date()
 {% endif %}
 {% endmacro %}
