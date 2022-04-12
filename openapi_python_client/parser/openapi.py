@@ -177,7 +177,7 @@ class Endpoint:
                     ParseError(
                         detail=(
                             f"Cannot parse response for status code {code}, "
-                            f"response will be ommitted from generated client"
+                            f"response will be omitted from generated client"
                         ),
                         data=response.data,
                     )
