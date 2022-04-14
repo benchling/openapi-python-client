@@ -83,6 +83,10 @@ client: Client,
 {% for parameter in endpoint.path_parameters %}
 {{ parameter.to_string() }},
 {% endfor %}
+{# Yaml data if any #}
+{% if endpoint.yaml_body_reference %}
+yaml_data: {{ endpoint.yaml_body_reference.class_name }},
+{% endif %}
 {# Form data if any #}
 {% if endpoint.form_body_reference %}
 form_data: {{ endpoint.form_body_reference.class_name }},
@@ -110,6 +114,9 @@ client=client,
 {% for parameter in endpoint.path_parameters %}
 {{ parameter.python_name }}={{ parameter.python_name }},
 {% endfor %}
+{% if endpoint.yaml_body_reference %}
+yaml_data=yaml_data,
+{% endif %}
 {% if endpoint.form_body_reference %}
 form_data=form_data,
 {% endif %}

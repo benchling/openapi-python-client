@@ -7,12 +7,14 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response
 
 import this
+import yaml
 from __future__ import braces
 
 
 def _get_kwargs(
     *,
     client: AuthenticatedClient,
+    yaml_data: YamlBody,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
@@ -26,6 +28,7 @@ def _get_kwargs(
         "headers": headers,
         "cookies": client.get_cookies(),
         "timeout": client.get_timeout(),
+        "yaml": yaml.safe_load(yaml_data.read_bytes()),
         "data": asdict(form_data),
         "files": multipart_data.to_dict(),
         "json": json_json_body,
@@ -54,12 +57,14 @@ def _build_response(*, response: httpx.Response) -> Response[Union[str, int]]:
 def sync_detailed(
     *,
     client: AuthenticatedClient,
+    yaml_data: YamlBody,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
 ) -> Response[Union[str, int]]:
     kwargs = _get_kwargs(
         client=client,
+        yaml_data=yaml_data,
         form_data=form_data,
         multipart_data=multipart_data,
         json_body=json_body,
@@ -75,6 +80,7 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
+    yaml_data: YamlBody,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
@@ -83,6 +89,7 @@ def sync(
 
     return sync_detailed(
         client=client,
+        yaml_data=yaml_data,
         form_data=form_data,
         multipart_data=multipart_data,
         json_body=json_body,
@@ -92,12 +99,14 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
+    yaml_data: YamlBody,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
 ) -> Response[Union[str, int]]:
     kwargs = _get_kwargs(
         client=client,
+        yaml_data=yaml_data,
         form_data=form_data,
         multipart_data=multipart_data,
         json_body=json_body,
@@ -112,6 +121,7 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
+    yaml_data: YamlBody,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
@@ -121,6 +131,7 @@ async def asyncio(
     return (
         await asyncio_detailed(
             client=client,
+            yaml_data=yaml_data,
             form_data=form_data,
             multipart_data=multipart_data,
             json_body=json_body,

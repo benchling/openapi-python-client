@@ -20,6 +20,7 @@ def test_async_module(template, mocker):
     header_param.name = "headerParam"
     header_param.to_string.return_value = "header_param_1: str"
 
+    yaml_body_reference = mocker.MagicMock(class_name="YamlBody")
     form_body_reference = mocker.MagicMock(class_name="FormBody")
     multipart_body_reference = mocker.MagicMock(class_name="MultiPartBody")
     json_body = mocker.MagicMock(template=None, python_name="json_body")
@@ -37,6 +38,7 @@ def test_async_module(template, mocker):
         requires_security=True,
         path_parameters=[],
         query_parameters=[],
+        yaml_body_reference=yaml_body_reference,
         form_body_reference=form_body_reference,
         multipart_body_reference=multipart_body_reference,
         json_body=json_body,
@@ -44,7 +46,7 @@ def test_async_module(template, mocker):
         description="POST endpoint",
         path="/post/",
         method="post",
-        relative_imports=["import this", "from __future__ import braces"],
+        relative_imports=["import this", "from __future__ import braces", "import yaml"],
     )
     post_endpoint.name = "camelCase"
 

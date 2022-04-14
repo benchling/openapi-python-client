@@ -94,10 +94,20 @@ class Endpoint:
     path_parameters: List[Property] = field(default_factory=list)
     header_parameters: List[Property] = field(default_factory=list)
     responses: List[Response] = field(default_factory=list)
+    yaml_body_reference: Optional[Reference] = None
     form_body_reference: Optional[Reference] = None
     json_body: Optional[Property] = None
     multipart_body_reference: Optional[Reference] = None
     errors: List[ParseError] = field(default_factory=list)
+
+    @staticmethod
+    def parse_yaml_body_reference(body: oai.RequestBody) -> Optional[Reference]:
+        """ Return yaml_body_reference """
+        body_content = body.content
+        yaml_body = body_content.get("text/yaml")
+        if yaml_body is not None and isinstance(yaml_body.media_type_schema, oai.Reference):
+            return Reference.from_ref(yaml_body.media_type_schema.ref)
+        return None
 
     @staticmethod
     def parse_request_form_body(body: oai.RequestBody) -> Optional[Reference]:
@@ -110,7 +120,7 @@ class Endpoint:
 
     @staticmethod
     def parse_multipart_body(body: oai.RequestBody) -> Optional[Reference]:
-        """ Return form_body_reference """
+        """ Return multipart_body_reference """
         body_content = body.content
         json_body = body_content.get("multipart/form-data")
         if json_body is not None and isinstance(json_body.media_type_schema, oai.Reference):
@@ -152,6 +162,8 @@ class Endpoint:
 
         endpoint.multipart_body_reference = Endpoint.parse_multipart_body(data.requestBody)
 
+        endpoint.yaml_body_reference = Endpoint.parse_yaml_body_reference(data.requestBody)
+
         if endpoint.form_body_reference:
             endpoint.relative_imports.add(
                 import_string_from_reference(endpoint.form_body_reference, prefix="...models")
@@ -163,6 +175,11 @@ class Endpoint:
         if json_body is not None:
             endpoint.json_body = json_body
             endpoint.relative_imports.update(endpoint.json_body.get_imports(prefix="..."))
+        if endpoint.yaml_body_reference:
+            endpoint.relative_imports.add(
+                import_string_from_reference(endpoint.yaml_body_reference, prefix="...models")
+            )
+
         return endpoint, schemas
 
     @staticmethod

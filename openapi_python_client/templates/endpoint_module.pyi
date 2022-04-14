@@ -38,6 +38,9 @@ def _get_kwargs(
         "headers": headers,
         "cookies": client.get_cookies(),
         "timeout": client.get_timeout(),
+        {% if endpoint.yaml_body_reference %}
+        "yaml": yaml.safe_load(yaml_data.read_bytes()),
+        {% endif %}
         {% if endpoint.form_body_reference %}
         "data": asdict(form_data),
         {% endif %}

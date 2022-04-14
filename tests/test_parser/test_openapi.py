@@ -66,6 +66,33 @@ class TestGeneratorData:
 
 
 class TestEndpoint:
+    def test_parse_yaml_body(self, mocker):
+        ref = mocker.MagicMock()
+        body = oai.RequestBody.construct(
+            content={
+                "text/yaml": oai.MediaType.construct(
+                    media_type_schema=oai.Reference.construct(ref=ref)
+                )
+            }
+        )
+        from_ref = mocker.patch(f"{MODULE_NAME}.Reference.from_ref")
+
+        from openapi_python_client.parser.openapi import Endpoint
+
+        result = Endpoint.parse_yaml_body_reference(body)
+
+        from_ref.assert_called_once_with(ref)
+        assert result == from_ref()
+
+    def test_parse_yaml_body_no_data(self):
+        body = oai.RequestBody.construct(content={})
+
+        from openapi_python_client.parser.openapi import Endpoint
+
+        result = Endpoint.parse_yaml_body_reference(body)
+
+        assert result is None
+
     def test_parse_request_form_body(self, mocker):
         ref = mocker.MagicMock()
         body = oai.RequestBody.construct(
