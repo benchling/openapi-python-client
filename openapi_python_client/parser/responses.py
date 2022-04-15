@@ -23,7 +23,7 @@ _SOURCE_BY_CONTENT_TYPE = {
     "application/json": "response.json()",
     "application/octet-stream": "response.content",
     "text/html": "response.text",
-    "text/yaml": "yaml.safe_load(response.text)",
+    "text/yaml": "response.text",
 }
 
 

@@ -94,20 +94,28 @@ class Endpoint:
     path_parameters: List[Property] = field(default_factory=list)
     header_parameters: List[Property] = field(default_factory=list)
     responses: List[Response] = field(default_factory=list)
-    yaml_body_reference: Optional[Reference] = None
+    yaml_body: Optional[Reference] = None
     form_body_reference: Optional[Reference] = None
     json_body: Optional[Property] = None
     multipart_body_reference: Optional[Reference] = None
     errors: List[ParseError] = field(default_factory=list)
 
     @staticmethod
-    def parse_yaml_body_reference(body: oai.RequestBody) -> Optional[Reference]:
-        """ Return yaml_body_reference """
+    def parse_request_yaml_body(
+            *, body: oai.RequestBody, schemas: Schemas, parent_name: str
+    ) -> Tuple[Union[Property, PropertyError, None], Schemas]:
+        """ Return yaml_body """
         body_content = body.content
         yaml_body = body_content.get("text/yaml")
-        if yaml_body is not None and isinstance(yaml_body.media_type_schema, oai.Reference):
-            return Reference.from_ref(yaml_body.media_type_schema.ref)
-        return None
+        if yaml_body is not None and yaml_body.media_type_schema is not None:
+            return property_from_data(
+                name="yaml_body",
+                required=True,
+                data=yaml_body.media_type_schema,
+                schemas=schemas,
+                parent_name=parent_name,
+            )
+        return None, schemas
 
     @staticmethod
     def parse_request_form_body(body: oai.RequestBody) -> Optional[Reference]:
@@ -160,9 +168,13 @@ class Endpoint:
         if isinstance(json_body, ParseError):
             return ParseError(detail=f"cannot parse body of endpoint {endpoint.name}", data=json_body.data), schemas
 
-        endpoint.multipart_body_reference = Endpoint.parse_multipart_body(data.requestBody)
+        yaml_body, schemas = Endpoint.parse_request_yaml_body(
+            body=data.requestBody, schemas=schemas, parent_name=endpoint.name
+        )
+        if isinstance(yaml_body, ParseError):
+            return ParseError(detail=f"cannot parse body of endpoint {endpoint.name}", data=yaml_body.data), schemas
 
-        endpoint.yaml_body_reference = Endpoint.parse_yaml_body_reference(data.requestBody)
+        endpoint.multipart_body_reference = Endpoint.parse_multipart_body(data.requestBody)
 
         if endpoint.form_body_reference:
             endpoint.relative_imports.add(
@@ -175,10 +187,9 @@ class Endpoint:
         if json_body is not None:
             endpoint.json_body = json_body
             endpoint.relative_imports.update(endpoint.json_body.get_imports(prefix="..."))
-        if endpoint.yaml_body_reference:
-            endpoint.relative_imports.add(
-                import_string_from_reference(endpoint.yaml_body_reference, prefix="...models")
-            )
+        if yaml_body is not None:
+            endpoint.yaml_body = yaml_body
+            endpoint.relative_imports.update(endpoint.yaml_body.get_imports(prefix="..."))
 
         return endpoint, schemas
 
