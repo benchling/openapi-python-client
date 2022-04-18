@@ -94,7 +94,7 @@ class Endpoint:
     path_parameters: List[Property] = field(default_factory=list)
     header_parameters: List[Property] = field(default_factory=list)
     responses: List[Response] = field(default_factory=list)
-    yaml_body: Optional[Reference] = None
+    yaml_body: Optional[Property] = None
     form_body_reference: Optional[Reference] = None
     json_body: Optional[Property] = None
     multipart_body_reference: Optional[Reference] = None

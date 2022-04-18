@@ -56,6 +56,17 @@ if {% if not property.required %}not isinstance({{ property_name }}, Unset) and 
 {% endif %}
 {% endmacro %}
 
+{% macro yaml_body(endpoint) %}
+{% if endpoint.yaml_body %}
+    {% set property = endpoint.yaml_body %}
+    {% set destination = "yaml_" + property.python_name %}
+    {% if property.template %}
+        {% from "property_templates/" + property.template import transform %}
+{{ transform(property, property.python_name, destination) }}
+    {% endif %}
+{% endif %}
+{% endmacro %}
+
 {% macro return_type(endpoint) %}
 {% if endpoint.responses | length == 0 %}
 None

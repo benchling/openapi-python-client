@@ -3,7 +3,6 @@ __all__ = ["Response", "response_from_data"]
 from typing import Tuple, Union
 
 import attr
-import yaml
 
 from .. import schema as oai
 from .errors import ParseError, PropertyError
@@ -23,7 +22,7 @@ _SOURCE_BY_CONTENT_TYPE = {
     "application/json": "response.json()",
     "application/octet-stream": "response.content",
     "text/html": "response.text",
-    "text/yaml": "response.text",
+    "text/yaml": "yaml.safe_load(response.text.encode('utf-8'))",
 }
 
 
