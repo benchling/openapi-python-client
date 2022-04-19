@@ -41,9 +41,6 @@ def _get_kwargs(
         "headers": headers,
         "cookies": client.get_cookies(),
         "timeout": client.get_timeout(),
-        {% if endpoint.yaml_body %}
-        "yaml": {{ "yaml_" + endpoint.yaml_body.python_name }},
-        {% endif %}
         {% if endpoint.form_body_reference %}
         "data": asdict(form_data),
         {% endif %}
@@ -52,7 +49,9 @@ def _get_kwargs(
         {% endif %}
         {% if endpoint.json_body %}
         "json": {{ "json_" + endpoint.json_body.python_name }},
-        {% endif %}
+        {%- elif endpoint.yaml_body %}
+        "json": {{ "yaml_" + endpoint.yaml_body.python_name }},
+        {%- endif %}
         {% if endpoint.query_parameters %}
         "params": params,
         {% endif %}
