@@ -21,7 +21,7 @@ def test_async_module(template, mocker):
     header_param.to_string.return_value = "header_param_1: str"
 
     yaml_body = mocker.MagicMock(template=None, python_name="yaml_body")
-    yaml_body.get_type_string.return_value = "Yaml"
+    yaml_body.get_type_string.return_value = "Json"
     form_body_reference = mocker.MagicMock(class_name="FormBody")
     multipart_body_reference = mocker.MagicMock(class_name="MultiPartBody")
     json_body = mocker.MagicMock(template=None, python_name="json_body")

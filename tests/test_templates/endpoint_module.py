@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
+import yaml
 from attr import asdict
 
 from ...client import AuthenticatedClient, Client
@@ -13,7 +14,7 @@ from __future__ import braces
 def _get_kwargs(
     *,
     client: AuthenticatedClient,
-    yaml_body: Yaml,
+    yaml_body: Json,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
@@ -27,7 +28,6 @@ def _get_kwargs(
         "headers": headers,
         "cookies": client.get_cookies(),
         "timeout": client.get_timeout(),
-        "yaml": yaml_yaml_body,
         "data": asdict(form_data),
         "files": multipart_data.to_dict(),
         "json": json_json_body,
@@ -56,7 +56,7 @@ def _build_response(*, response: httpx.Response) -> Response[Union[str, int]]:
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    yaml_body: Yaml,
+    yaml_body: Json,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
@@ -79,7 +79,7 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    yaml_body: Yaml,
+    yaml_body: Json,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
@@ -98,7 +98,7 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    yaml_body: Yaml,
+    yaml_body: Json,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
@@ -120,7 +120,7 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    yaml_body: Yaml,
+    yaml_body: Json,
     form_data: FormBody,
     multipart_data: MultiPartBody,
     json_body: Json,
