@@ -94,7 +94,7 @@ def test_response_from_data_property_of_type_text_yaml(mocker):
     assert response == responses.Response(
         status_code=400,
         prop=prop,
-        source="yaml.safe_load(response.text.encode('utf-8'))",
+        source="response.yaml",
     )
     property_from_data.assert_called_once_with(
         name="response_400", required=True, data="something", schemas=Schemas(), parent_name="parent"

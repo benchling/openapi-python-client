@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, Optional, Union, cast
 
 import httpx
-import yaml
 from attr import asdict
+from ruamel.yaml import YAML
 
 from ...client import AuthenticatedClient, Client
 from ...types import Response
