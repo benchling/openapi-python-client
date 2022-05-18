@@ -146,5 +146,14 @@ Example:
 package_version_override: 1.2.3
 ```
 
+## How to publish changes
+Quip doc that highlights how to pull the dependency to Aurelia and publish using a buildkite pipeline can be found [here](https://benchling.quip.com/PgytA283Rlyo/2022-02-16-Guide-for-Publishing-a-Package)
+
+After changes are made to this package, to publish a new version of this package:
+* Bump the version on pyproject.toml
+* Run `poetry run task gen-setuppy` which updates setup.py
+* Kick off a buildkite pipeline build as highlighted in the quip doc (would need to designate the branch of which to check for publish)
+
+
 [changelog.md]: CHANGELOG.md
 [poetry]: https://python-poetry.org/
