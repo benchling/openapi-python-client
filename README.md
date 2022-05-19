@@ -151,6 +151,9 @@ Quip doc that highlights how to pull the dependency to Aurelia and publish using
 
 After changes are made to this package, to publish a new version of this package:
 * Bump the version on pyproject.toml
+* Install `gnu-sed` (assuming that you're running on a mac) by running `brew install gnu-sed`
+  * macOS uses BSD sed, which is similar to Linux's GNU sed but cannot explicitly edit files in place i.e. cannot utilize `-i` tag
+* Set GNU sed PATH by running `brew info gnu-sed` to check for PATH
 * Run `poetry run task gen-setuppy` which updates setup.py
 * Kick off a buildkite pipeline build as highlighted in the quip doc (would need to designate the branch of which to check for publish)
 
