@@ -317,6 +317,13 @@ def build_model_property(
             optional_properties.append(prop)
         relative_imports.update(prop.get_imports(prefix=".."))
 
+    discriminator_mappings: Dict[str, Property] = {}
+    reference_name_to_subprop = {}
+    if data.discriminator is not None:
+        for k, v in (data.discriminator.mapping if data.discriminator else {}).items():
+            ref_class_name = Reference.from_ref(v).class_name
+            discriminator_mappings[k] = reference_name_to_subprop[ref_class_name]
+
     additional_properties: Union[bool, Property, PropertyError]
     if data.additionalProperties is None:
         additional_properties = True
@@ -347,6 +354,8 @@ def build_model_property(
         description=data.description or "",
         default=None,
         nullable=data.nullable,
+        discriminator_property=data.discriminator.propertyName if data.discriminator else None,
+        discriminator_mappings=discriminator_mappings,
         required=required,
         name=name,
         additional_properties=additional_properties,

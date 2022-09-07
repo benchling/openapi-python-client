@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, ClassVar, Dict, List, Set, Union
+from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Set, Union
 
 import attr
 
@@ -22,6 +22,9 @@ class ModelProperty(Property):
     references: List[oai.Reference]
     required_properties: List[Property]
     optional_properties: List[Property]
+    discriminator_property: Optional[str]
+    discriminator_mappings: Dict[str, Property]
+
     description: str
     relative_imports: Set[str]
     additional_properties: Union[bool, Property]
@@ -29,6 +32,9 @@ class ModelProperty(Property):
 
     template: ClassVar[str] = "model_property.pyi"
     json_is_dict: ClassVar[bool] = True
+
+    def __attrs_post_init__(self):
+        breakpoint()
 
     def resolve_references(
         self, components: Dict[str, Union[oai.Reference, oai.Schema]], schemas: Schemas
