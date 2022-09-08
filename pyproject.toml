@@ -34,7 +34,7 @@ importlib_metadata = {version = ">=4.4", python = "<3.8"}
 pydantic = "^1.6.1"
 attrs = ">=20.1.0, <22.0"
 python-dateutil = "^2.8.1"
-httpx = ">=0.15.4,<=0.22.0"
+httpx = ">=0.23.0"
 autoflake = "^1.4"
 
 [tool.poetry.scripts]
@@ -74,7 +74,7 @@ poetry build \
 && tar --strip-components=1 -xvf "$(ls -1 dist/*tar.gz | tail -1)" '*/setup.py' \
 && isort setup.py \
 && black setup.py \
-&& sed -i 's/"openapi-python-client"/"benchling-openapi-python-client"/' setup.py
+&& sed -i '' 's/"openapi-python-client"/"benchling-openapi-python-client"/' setup.py
 """
 
 [tool.black]
