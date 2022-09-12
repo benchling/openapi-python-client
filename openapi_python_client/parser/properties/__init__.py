@@ -318,11 +318,9 @@ def build_model_property(
         relative_imports.update(prop.get_imports(prefix=".."))
 
     discriminator_mappings: Dict[str, Property] = {}
-    reference_name_to_subprop = {}
     if data.discriminator is not None:
         for k, v in (data.discriminator.mapping if data.discriminator else {}).items():
-            ref_class_name = Reference.from_ref(v).class_name
-            discriminator_mappings[k] = reference_name_to_subprop[ref_class_name]
+            discriminator_mappings[k] = Reference.from_ref(v)
 
     additional_properties: Union[bool, Property, PropertyError]
     if data.additionalProperties is None:
