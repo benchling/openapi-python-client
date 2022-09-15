@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Set, Union
 import attr
 
 from ... import schema as oai
-from ... import utils
 from ..errors import PropertyError
 from ..reference import Reference
 from .property import Property
@@ -82,31 +81,6 @@ class ModelProperty(Property):
 
     def get_base_type_string(self) -> str:
         return self.reference.class_name
-
-    def get_discriminator_name(self) -> str:
-        """
-        Returns the python_name of the discriminator value, or None if there isn't one.
-
-        discriminator_property is the name in openapi.yaml, for example 'nucleotideType'
-        This function returns its python_name, e.g. "nucleotide_type"
-
-        Oligo:
-          discriminator:
-            propertyName: nucleotideType
-            mapping:
-              DNA: DnaOligo
-              RNA: RnaOligo
-        """
-        if not self.discriminator_property:
-            return None
-        all_properties = self.optional_properties + self.required_properties
-        discriminator_reference = next(filter(lambda x: x.name == self.discriminator_property, all_properties), None)
-        if discriminator_reference:
-            return discriminator_reference.python_name
-        # self.discriminator_property is not a property of this model.
-        # If so, we assume it's a property inherited from oneOf or anyOf.
-        # Render it in snake_case since we cannot access it directly during template expansion.
-        return utils.snake_case(self.discriminator_property)
 
     def get_imports(self, *, prefix: str) -> Set[str]:
         """
