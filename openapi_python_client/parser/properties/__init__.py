@@ -319,7 +319,7 @@ def build_model_property(
 
     discriminator_mappings: Dict[str, Property] = {}
     if data.discriminator is not None:
-        for k, v in (data.discriminator.mapping if data.discriminator else {}).items():
+        for k, v in (data.discriminator.mapping or {}).items():
             discriminator_mappings[k] = Reference.from_ref(v)
 
     additional_properties: Union[bool, Property, PropertyError]
@@ -453,7 +453,7 @@ def build_union_property(
 
     discriminator_mappings: Dict[str, Property] = {}
     if data.discriminator is not None:
-        for k, v in (data.discriminator.mapping if data.discriminator else {}).items():
+        for k, v in (data.discriminator.mapping or {}).items():
             ref_class_name = Reference.from_ref(v).class_name
             discriminator_mappings[k] = reference_name_to_subprop[ref_class_name]
 
