@@ -49,6 +49,9 @@ class Property:
         """
         if json:
             type_string = self._json_type_string
+        elif getattr(self, "discriminator_mappings", None):
+            discriminator_types = ", ".join([ref.class_name for ref in self.discriminator_mappings.values()])
+            type_string = f"Union[{discriminator_types}]"
         else:
             type_string = self.get_base_type_string()
 
