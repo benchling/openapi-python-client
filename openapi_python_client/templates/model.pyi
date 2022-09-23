@@ -13,12 +13,6 @@ from ..types import UNSET, Unset
 {{ relative }}
 {% endfor %}
 
-{% for property in model.required_properties + model.optional_properties %}
-{% if property.discriminator_property %}
-{% for relative in property.relative_imports %}
-{{ relative }}
-{% endif %}
-{% endfor %}
 
 {% if model.additional_properties %}
 {% set additional_property_type = 'Any' if model.additional_properties == True else model.additional_properties.get_type_string() %}
@@ -89,11 +83,7 @@ class {{ model.reference.class_name }}:
     {% else %}
         {% set property_source = 'd.pop("' + property.name + '", UNSET)' %}
     {% endif %}
-    {% if property.discriminator_property %}
-        def get_{{ property.python_name}}() -> Union[Unset, None, {{ property.type_string }}]:
-        {% from "property_templates/discriminator_property.pyi" import construct %}
-        {{ construct(property, property_source) | indent(8) }}
-    {% elif property.template %}
+    {% if property.template %}
         {% from "property_templates/" + property.template import construct %}
         {{ construct(property, property_source) | indent(8) }}
     {% else %}
