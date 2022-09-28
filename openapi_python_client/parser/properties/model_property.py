@@ -81,7 +81,9 @@ class ModelProperty(Property):
 
     def get_base_type_string(self) -> str:
         if getattr(self, "discriminator_mappings", None):
-            discriminator_types = ", ".join([ref.class_name for ref in self.discriminator_mappings.values()])
+            discriminator_types = ", ".join(
+                [ref.class_name for ref in self.discriminator_mappings.values()] + ["UnknownType"]
+            )
             return f"Union[{discriminator_types}]"
         return self.reference.class_name
 
