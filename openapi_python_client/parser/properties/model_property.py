@@ -47,7 +47,7 @@ class ModelProperty(Property):
             assert isinstance(referenced_prop, oai.Schema)
             for p, val in (referenced_prop.properties or {}).items():
                 props[p] = (val, source_name)
-            for sub_prop in referenced_prop.allOf or []:
+            for sub_prop in referenced_prop.allOf or referenced_prop.oneOf or []:
                 if isinstance(sub_prop, oai.Reference):
                     self.references.append(sub_prop)
                 else:
