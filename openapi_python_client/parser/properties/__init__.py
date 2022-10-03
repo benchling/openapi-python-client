@@ -1,3 +1,5 @@
+_property = property  # isort: skip
+
 from itertools import chain
 from typing import Any, ClassVar, Dict, Generic, Iterable, Iterator, List, Optional, Set, Tuple, TypeVar, Union
 
@@ -181,6 +183,13 @@ class UnionProperty(Property):
     def get_base_type_string(self, json: bool = False) -> str:
         return f"Union[{', '.join(self._get_inner_type_strings(json=json))}]"
 
+    def resolve_references(self, components, schemas):
+        return schemas
+
+    @_property
+    def module_name(self):
+        return self.name
+
     def get_type_strings_in_union(
         self, no_optional: bool = False, query_parameter: bool = False, json: bool = False
     ) -> List[str]:
@@ -284,6 +293,14 @@ def build_model_property(
             Used to infer the type name if a `title` property is not available.
         schemas: Existing Schemas which have already been processed (to check name conflicts)
     """
+    if data.anyOf or data.oneOf:
+        prop, schemas = build_union_property(
+            data=data, name=name, required=required, schemas=schemas, parent_name=parent_name
+        )
+        if not isinstance(prop, PropertyError):
+            schemas = attr.evolve(schemas, models={**schemas.models, prop.name: prop})
+        return prop, schemas
+
     required_set = set(data.required or [])
     required_properties: List[Property] = []
     optional_properties: List[Property] = []

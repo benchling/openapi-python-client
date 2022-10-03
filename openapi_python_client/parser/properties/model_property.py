@@ -33,6 +33,10 @@ class ModelProperty(Property):
     template: ClassVar[str] = "model_property.pyi"
     json_is_dict: ClassVar[bool] = True
 
+    @property
+    def module_name(self):
+        return self.reference.module_name
+
     def resolve_references(
         self, components: Dict[str, Union[oai.Reference, oai.Schema]], schemas: Schemas
     ) -> Union[Schemas, PropertyError]:
@@ -47,7 +51,7 @@ class ModelProperty(Property):
             assert isinstance(referenced_prop, oai.Schema)
             for p, val in (referenced_prop.properties or {}).items():
                 props[p] = (val, source_name)
-            for sub_prop in referenced_prop.allOf or referenced_prop.oneOf or []:
+            for sub_prop in referenced_prop.allOf or referenced_prop.anyOf or referenced_prop.oneOf or []:
                 if isinstance(sub_prop, oai.Reference):
                     self.references.append(sub_prop)
                 else:
