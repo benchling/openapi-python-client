@@ -162,10 +162,11 @@ class UnionProperty(Property):
     """ A property representing a Union (anyOf) of other properties """
 
     inner_properties: List[Property]
+    relative_imports: Set[str] = set()
     template: ClassVar[str] = "union_property.pyi"
     has_properties_without_templates: bool = attr.ib(init=False)
-    discriminator_property: Optional[str]
-    discriminator_mappings: Dict[str, Property]
+    discriminator_property: Optional[str] = None
+    discriminator_mappings: Dict[str, Property] = {}
 
     def __attrs_post_init__(self) -> None:
         super().__attrs_post_init__()
@@ -184,11 +185,12 @@ class UnionProperty(Property):
         return f"Union[{', '.join(self._get_inner_type_strings(json=json))}]"
 
     def resolve_references(self, components, schemas):
+        self.relative_imports.update(self.get_imports(prefix=".."))
         return schemas
 
     @_property
     def module_name(self):
-        return self.name
+        return self.python_name
 
     def get_type_strings_in_union(
         self, no_optional: bool = False, query_parameter: bool = False, json: bool = False

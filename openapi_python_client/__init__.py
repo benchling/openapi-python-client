@@ -174,7 +174,7 @@ class Project:
         imports = []
 
         model_template = self.env.get_template("model.pyi")
-        union_property_template = self.env.get_template("property_templates/union_property.pyi")
+        union_property_template = self.env.get_template("polymorphic_model.pyi")
 
         for model in self.openapi.models.values():
             if isinstance(model, UnionProperty):
