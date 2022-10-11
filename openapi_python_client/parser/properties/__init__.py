@@ -179,7 +179,8 @@ class UnionProperty(Property):
         if not json:
             inner_types.append("UnknownType")
         unique_inner_types = list(dict.fromkeys(inner_types))
-        return unique_inner_types
+        filter_self_types = [name for name in unique_inner_types if name != self.name]
+        return filter_self_types
 
     def get_base_type_string(self, json: bool = False) -> str:
         return f"Union[{', '.join(self._get_inner_type_strings(json=json))}]"
