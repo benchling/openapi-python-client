@@ -38,12 +38,13 @@ class {{ model.reference.class_name }}:
     {% endif %}
 
 
-    def to_dict(self, _skip_read_only=False) -> Dict[str, Any]:
+    def to_dict(self, _serialize_options: Dict[str, Any]={}) -> Dict[str, Any]:
         {% for property in model.required_properties + model.optional_properties %}
         {% if property.template %}
         {% import "property_templates/" + property.template as prop_template %}
-        {% if prop_template.transform_extended %}
-        {{ prop_template.transform_extended(property, "self._" + property.python_name, property.python_name, skip_read_only_expr="_skip_read_only") | indent(8) }}
+        {% if prop_template.transform_with_options %}
+        {{ prop_template.transform_with_options(property, "self._" + property.python_name, property.python_name,
+                                                {"serialize_options_expr": "_serialize_options"}) | indent(8) }}
         {% else %}
         {{ prop_template.transform(property, "self._" + property.python_name, property.python_name) | indent(8) }}
         {% endif %}
@@ -64,7 +65,7 @@ class {{ model.reference.class_name }}:
         {% endif %}
         {% for property in model.required_properties + model.optional_properties %}
         {% if property.read_only %}
-        if {{ property.python_name }} is not UNSET and not _skip_read_only:
+        if {{ property.python_name }} is not UNSET and not _serialize_options.get("skip_read_only"):
         {% else %}
         if {{ property.python_name }} is not UNSET:
         {% endif %}

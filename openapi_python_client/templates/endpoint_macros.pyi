@@ -48,8 +48,9 @@ if {% if not property.required %}not isinstance({{ property_name }}, Unset) and 
 {% macro encode_body(property, destination) %}
 {% if property.template %}
 {% import "property_templates/" + property.template as prop_template %}
-{% if prop_template.transform_extended %}
-{{ prop_template.transform_extended(property, property.python_name, destination, skip_read_only_expr="True") }}
+{% if prop_template.transform_with_options %}
+{{ prop_template.transform_with_options(property, property.python_name, destination,
+                                        {"serialize_options_expr": "{\"skip_read_only\": True}"}) }}
 {% else %}
 {{ prop_template.transform(property, property.python_name, destination) }}
 {% endif %}
