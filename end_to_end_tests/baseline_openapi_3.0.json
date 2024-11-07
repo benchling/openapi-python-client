@@ -991,6 +991,20 @@
         }
       }
     },
+    "/responses/reference": {
+      "get": {
+        "tags": [
+          "responses"
+        ],
+        "summary": "Endpoint using predefined response",
+        "operationId": "reference_response",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AResponse"
+          }
+        }
+      }
+    },
     "/auth/token_with_cookie": {
       "get": {
         "tags": [
@@ -2864,7 +2878,8 @@
           "propertyName": "modelType",
           "mapping": {
             "type1": "#/components/schemas/ADiscriminatedUnionType1",
-            "type2": "#/components/schemas/ADiscriminatedUnionType2"
+            "type2": "#/components/schemas/ADiscriminatedUnionType2",
+            "type2-another-value": "#/components/schemas/ADiscriminatedUnionType2"
           }
         },
         "oneOf": [
@@ -2882,7 +2897,8 @@
           "modelType": {
             "type": "string"
           }
-        }
+        },
+        "required": ["modelType"]
       },
       "ADiscriminatedUnionType2": {
         "type": "object",
@@ -2890,7 +2906,8 @@
           "modelType": {
             "type": "string"
           }
-        }
+        },
+        "required": ["modelType"]
       }
     },
     "parameters": {
@@ -2963,6 +2980,18 @@
         "$ref": "#/components/requestBodies/ARequestBody"
       },
       "ARequestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/AModel"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "AResponse": {
+        "description": "OK",
         "content": {
           "application/json": {
             "schema": {
