@@ -12,6 +12,7 @@ def test_required_not_nullable():
         nullable=False,
         default=None,
         description=None,
+        read_only=False,
     )
     here = Path(__file__).parent
     templates_dir = here.parent.parent.parent.parent / "openapi_python_client" / "templates"
@@ -35,6 +36,7 @@ def test_required_nullable():
         nullable=True,
         default=None,
         description=None,
+        read_only=False,
     )
     here = Path(__file__).parent
     templates_dir = here.parent.parent.parent.parent / "openapi_python_client" / "templates"
@@ -58,6 +60,7 @@ def test_optional_nullable():
         nullable=True,
         default=None,
         description=None,
+        read_only=False,
     )
     here = Path(__file__).parent
     templates_dir = here.parent.parent.parent.parent / "openapi_python_client" / "templates"

@@ -38,13 +38,17 @@ class {{ model.reference.class_name }}:
     {% endif %}
 
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self, _skip_read_only=False) -> Dict[str, Any]:
         {% for property in model.required_properties + model.optional_properties %}
         {% if property.template %}
-        {% from "property_templates/" + property.template import transform %}
-        {{ transform(property, "self." + property.python_name, property.python_name) | indent(8) }}
+        {% import "property_templates/" + property.template as prop_template %}
+        {% if prop_template.transform_extended %}
+        {{ prop_template.transform_extended(property, "self._" + property.python_name, property.python_name, skip_read_only_expr="_skip_read_only") | indent(8) }}
         {% else %}
-        {{ property.python_name }} =  self.{{ property.python_name }}
+        {{ prop_template.transform(property, "self._" + property.python_name, property.python_name) | indent(8) }}
+        {% endif %}
+        {% else %}
+        {{ property.python_name }} = self._{{ property.python_name }}
         {% endif %}
         {% endfor %}
 
@@ -58,18 +62,13 @@ class {{ model.reference.class_name }}:
         field_dict.update(self.additional_properties)
         {% endif %}
         {% endif %}
-        field_dict.update({
-            {% for property in model.required_properties + model.optional_properties %}
-            {% if property.required %}
-            "{{ property.name }}": {{ property.python_name }},
-            {% endif %}
-            {% endfor %}
-        })
-        {% for property in model.optional_properties %}
-        {% if not property.required %}
+        {% for property in model.required_properties + model.optional_properties %}
+        {% if property.read_only %}
+        if {{ property.python_name }} is not UNSET and not _skip_read_only:
+        {% else %}
         if {{ property.python_name }} is not UNSET:
-            field_dict["{{ property.name }}"] = {{ property.python_name }}
         {% endif %}
+            field_dict["{{ property.name }}"] = {{ property.python_name }}
         {% endfor %}
 
         return field_dict

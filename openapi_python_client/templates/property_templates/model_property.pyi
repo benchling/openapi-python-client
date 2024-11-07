@@ -25,19 +25,25 @@ if {% if property.nullable %}_{{ property.python_name }} is not None{% endif %}{
 {% macro check_type_for_construct(source) %}isinstance({{ source }}, dict){% endmacro %}
 
 {% macro transform(property, source, destination, declare_type=True, query_parameter=False) %}
+{{ transform_extended(property, source, destination, declare_type=declare_type, query_parameter=query_parameter) }}
+{% endmacro %}
+
+{% macro transform_extended(property, source, destination, declare_type=True, query_parameter=False, skip_read_only_expr="") %}
+{% set to_dict_params = ("_skip_read_only="+skip_read_only_expr) if skip_read_only_expr else "" %}
+{% set to_dict_expr = source + ".to_dict(" + to_dict_params + ")" %}
 {% if property.required %}
 {% if property.nullable %}
-{{ destination }} = {{ source }}.to_dict() if {{ source }} else None
+{{ destination }} = {{ to_dict_expr }} if {{ source }} else None
 {% else %}
-{{ destination }} = {{ source }}.to_dict()
+{{ destination }} = {{ to_dict_expr }}
 {% endif %}
 {% else %}
 {{ destination }}{% if declare_type %}: {{ property.get_type_string(query_parameter=query_parameter, json=True) }}{% endif %} = UNSET
 if not isinstance({{ source }}, Unset):
 {% if property.nullable %}
-    {{ destination }} = {{ source }}.to_dict() if {{ source }} else None
+    {{ destination }} = {{ to_dict_expr }} if {{ source }} else None
 {% else %}
-    {{ destination }} = {{ source }}.to_dict()
+    {{ destination }} = {{ to_dict_expr }}
 {% endif %}
 {% endif %}
 {% endmacro %}

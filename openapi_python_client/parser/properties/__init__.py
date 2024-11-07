@@ -256,6 +256,7 @@ def _string_based_property(
             default=convert("datetime.datetime", data.default),
             nullable=data.nullable,
             description=data.description,
+            read_only=data.readOnly,
         )
     elif string_format == "date":
         return DateProperty(
@@ -264,6 +265,7 @@ def _string_based_property(
             default=convert("datetime.date", data.default),
             nullable=data.nullable,
             description=data.description,
+            read_only=data.readOnly,
         )
     elif string_format == "binary":
         return FileProperty(
@@ -272,6 +274,7 @@ def _string_based_property(
             default=None,
             nullable=data.nullable,
             description=data.description,
+            read_only=data.readOnly,
         )
     else:
         return StringProperty(
@@ -281,6 +284,7 @@ def _string_based_property(
             pattern=data.pattern,
             nullable=data.nullable,
             description=data.description,
+            read_only=data.readOnly,
         )
 
 
@@ -377,6 +381,7 @@ def build_model_property(
         required=required,
         name=name,
         additional_properties=additional_properties,
+        read_only=data.readOnly,
     )
     schemas = attr.evolve(schemas, models={**schemas.models, prop.reference.class_name: prop})
     return prop, schemas
@@ -450,6 +455,7 @@ def build_enum_property(
         values=values,
         value_type=value_type,
         description=data.description,
+        read_only=data.readOnly,
     )
     schemas = attr.evolve(schemas, enums={**schemas.enums, prop.reference.class_name: prop})
     return prop, schemas
@@ -488,6 +494,7 @@ def build_union_property(
             discriminator_property=data.discriminator.propertyName if data.discriminator else None,
             discriminator_mappings=discriminator_mappings,
             description=data.description,
+            read_only=data.readOnly,
         ),
         schemas,
     )
@@ -511,6 +518,7 @@ def build_list_property(
             inner_property=inner_prop,
             nullable=data.nullable,
             description=data.description,
+            read_only=data.readOnly,
         ),
         schemas,
     )
@@ -568,6 +576,7 @@ def _property_from_data(
                 required=required,
                 nullable=data.nullable,
                 description=data.description,
+                read_only=data.readOnly,
             ),
             schemas,
         )
@@ -579,6 +588,7 @@ def _property_from_data(
                 required=required,
                 nullable=data.nullable,
                 description=data.description,
+                read_only=data.readOnly,
             ),
             schemas,
         )
@@ -590,6 +600,7 @@ def _property_from_data(
                 default=convert("bool", data.default),
                 nullable=data.nullable,
                 description=data.description,
+                read_only=data.readOnly,
             ),
             schemas,
         )
@@ -599,7 +610,7 @@ def _property_from_data(
         return build_model_property(data=data, name=name, schemas=schemas, required=required, parent_name=parent_name)
     elif not data.type:
         return (
-            NoneProperty(name=name, required=required, nullable=False, default=None, description=data.description),
+            NoneProperty(name=name, required=required, nullable=False, default=None, description=data.description, read_only=data.readOnly),
             schemas,
         )
     return PropertyError(data=data, detail=f"unknown type {data.type}"), schemas

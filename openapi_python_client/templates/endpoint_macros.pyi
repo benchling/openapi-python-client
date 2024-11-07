@@ -45,25 +45,28 @@ if {% if not property.required %}not isinstance({{ property_name }}, Unset) and 
 {% endif %}
 {% endmacro %}
 
+{% macro encode_body(property, destination) %}
+{% if property.template %}
+{% import "property_templates/" + property.template as prop_template %}
+{% if prop_template.transform_extended %}
+{{ prop_template.transform_extended(property, property.python_name, destination, skip_read_only_expr="True") }}
+{% else %}
+{{ prop_template.transform(property, property.python_name, destination) }}
+{% endif %}
+{% endif %}
+{% endmacro %}
+
 {% macro json_body(endpoint) %}
 {% if endpoint.json_body %}
-    {% set property = endpoint.json_body %}
-    {% set destination = "json_" + property.python_name %}
-    {% if property.template %}
-        {% from "property_templates/" + property.template import transform %}
-{{ transform(property, property.python_name, destination) }}
-    {% endif %}
+{% set property = endpoint.json_body %}
+{{ encode_body(property, "json_" + property.python_name) }}
 {% endif %}
 {% endmacro %}
 
 {% macro yaml_body(endpoint) %}
 {% if endpoint.yaml_body %}
-    {% set property = endpoint.yaml_body %}
-    {% set destination = "yaml_" + property.python_name %}
-    {% if property.template %}
-        {% from "property_templates/" + property.template import transform %}
-{{ transform(property, property.python_name, destination) }}
-    {% endif %}
+{% set property = endpoint.yaml_body %}
+{{ encode_body(property, "yaml_" + property.python_name) }}
 {% endif %}
 {% endmacro %}
 

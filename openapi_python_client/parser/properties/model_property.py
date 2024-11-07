@@ -25,7 +25,6 @@ class ModelProperty(Property):
     discriminator_property: Optional[str]
     discriminator_mappings: Dict[str, Property]
 
-    description: str
     relative_imports: Set[str]
     additional_properties: Union[bool, Property]
     _json_type_string: ClassVar[str] = "Dict[str, Any]"

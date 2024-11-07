@@ -346,12 +346,12 @@ class TestEndpoint:
         response_1 = Response(
             status_code=200,
             source="source",
-            prop=DateTimeProperty(name="datetime", required=True, nullable=False, default=None, description=None),
+            prop=DateTimeProperty(name="datetime", required=True, nullable=False, default=None, description=None, read_only=False),
         )
         response_2 = Response(
             status_code=404,
             source="source",
-            prop=DateProperty(name="date", required=True, nullable=False, default=None, description=None),
+            prop=DateProperty(name="date", required=True, nullable=False, default=None, description=None, read_only=False),
         )
         response_from_data = mocker.patch(
             f"{MODULE_NAME}.response_from_data", side_effect=[(response_1, schemas_1), (response_2, schemas_2)]
