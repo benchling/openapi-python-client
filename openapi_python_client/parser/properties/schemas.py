@@ -46,6 +46,13 @@ def parse_reference_path(ref_path_raw: str) -> Union[ReferencePath, ParseError]:
     return cast(ReferencePath, parsed.fragment)
 
 
+def get_reference_simple_name(ref_path: str) -> str:
+    """
+    Takes a path like `/components/schemas/NameOfThing` and returns a string like `NameOfThing`.
+    """
+    return ref_path.split("/", 3)[-1]
+
+
 @define
 class Class:
     """Represents Python class which will be generated from an OpenAPI schema"""
@@ -56,7 +63,7 @@ class Class:
     @staticmethod
     def from_string(*, string: str, config: Config) -> "Class":
         """Get a Class from an arbitrary string"""
-        class_name = string.split("/")[-1]  # Get rid of ref path stuff
+        class_name = get_reference_simple_name(string)  # Get rid of ref path stuff
         class_name = ClassName(class_name, config.field_prefix)
         override = config.class_overrides.get(class_name)
 
@@ -134,6 +141,15 @@ def update_schemas_with_data(
                 "\n\nRecursive and circular references are not supported directly in an array schema's 'items' section"
             )
         return prop
+
+    # Save the original path (/components/schemas/X) in the property. This is important because:
+    # 1. There are some contexts (such as a union with a discriminator) where we have a Property
+    #    instance and we want to know what its path is, instead of the other way round.
+    # 2. Even though we did set prop.name to be the same as ref_path when we created it above,
+    #    whenever there's a $ref to this property, we end up making a copy of it and changing
+    #    the name. So we can't rely on prop.name always being the path.
+    if hasattr(prop, "ref_path"):
+        prop.ref_path = ref_path
 
     schemas = evolve(schemas, classes_by_reference={ref_path: prop, **schemas.classes_by_reference})
     return schemas
