@@ -1,3 +1,4 @@
+import pytest
 
 from end_to_end_tests.end_to_end_test_helpers import (
     assert_model_decode_encode,
@@ -158,3 +159,11 @@ class TestDiscriminator:
             {"thing": {"kind": "ThingB", "name": "x"}},
             ModelWithDiscriminatorPartialMapping(thing=ThingB(kind="ThingB", name="x")),
         )
+
+    def test_decode_fails_if_property_not_found(self, ModelWithDiscriminatorExplicitMapping):
+        with pytest.raises(TypeError):
+            ModelWithDiscriminatorExplicitMapping.from_dict({"thing": {"name": "x"}})
+
+    def test_decode_fails_if_property_has_unrecognized_value(self, ModelWithDiscriminatorExplicitMapping):
+        with pytest.raises(TypeError):
+            ModelWithDiscriminatorExplicitMapping.from_dict({"thing": {"kind": "C", "name": "x"}})
