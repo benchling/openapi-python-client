@@ -167,3 +167,106 @@ class TestDiscriminator:
     def test_decode_fails_if_property_has_unrecognized_value(self, ModelWithDiscriminatorExplicitMapping):
         with pytest.raises(TypeError):
             ModelWithDiscriminatorExplicitMapping.from_dict({"thing": {"kind": "C", "name": "x"}})
+
+
+@with_generated_client_fixture(
+"""
+paths: {}
+components:
+  schemas:
+    Corgi:
+      type: object
+      properties:
+        dogType: { type: "string" }
+        name: { type: "string" }
+    Schnauzer:
+      type: object
+      properties:
+        dogType: { type: "string" }
+        name: { type: "string" }
+    Dog:
+      oneOf:
+        - $ref: "#/components/schemas/Corgi"
+        - $ref: "#/components/schemas/Schnauzer"
+      discriminator:
+        propertyName: dogType
+    Condor:
+      type: object
+      properties:
+        birdType: { type: "string" }
+        name: { type: "string" }
+    Emu:
+      type: object
+      properties:
+        birdType: { type: "string" }
+        name: { type: "string" }
+    Quail:
+      type: object
+      properties:
+        birdType: { type: "string" }
+        name: { type: "string" }
+    Sparrow:
+      type: object
+      properties:
+        birdType: { type: "string" }
+        name: { type: "string" }
+    BigBird:
+      oneOf:
+        - $ref: "#/components/schemas/Condor"
+        - $ref: "#/components/schemas/Emu"
+      discriminator:
+        propertyName: birdType
+    LittleBird:
+      oneOf:
+        - $ref: "#/components/schemas/Quail"
+        - $ref: "#/components/schemas/Sparrow"
+      discriminator:
+        propertyName: birdType
+    Bird:
+      oneOf:
+        - $ref: "#/components/schemas/BigBird"
+        - $ref: "#/components/schemas/LittleBird"
+    ModelWithDogOrBird:
+      type: object
+      properties:
+        dogOrBird:
+          oneOf:
+            - $ref: "#/components/schemas/Dog"
+            - $ref: "#/components/schemas/Bird"
+""")
+@with_generated_code_import(".models.Corgi")
+@with_generated_code_import(".models.Schnauzer")
+@with_generated_code_import(".models.Condor")
+@with_generated_code_import(".models.Emu")
+@with_generated_code_import(".models.Quail")
+@with_generated_code_import(".models.Sparrow")
+@with_generated_code_import(".models.ModelWithDogOrBird")
+class TestDiscriminatorInNestedUnion:
+    def test_different_discriminator_properties(self, Schnauzer, Sparrow, ModelWithDogOrBird):
+        assert_model_decode_encode(
+            ModelWithDogOrBird,
+            {"dogOrBird": {"dogType": "Schnauzer", "name": "Fido"}},
+            ModelWithDogOrBird(dog_or_bird=Schnauzer(dog_type="Schnauzer", name="Fido")),
+        )
+        assert_model_decode_encode(
+            ModelWithDogOrBird,
+            {"dogOrBird": {"birdType": "Sparrow", "name": "Fido"}},
+            ModelWithDogOrBird(dog_or_bird=Sparrow(bird_type="Sparrow", name="Fido")),
+        )
+
+    def test_same_discriminator_property_in_different_unions(self, Emu, Sparrow, ModelWithDogOrBird):
+        assert_model_decode_encode(
+            ModelWithDogOrBird,
+            {"dogOrBird": {"birdType": "Emu", "name": "Fido"}},
+            ModelWithDogOrBird(dog_or_bird=Emu(bird_type="Emu", name="Fido")),
+        )
+        assert_model_decode_encode(
+            ModelWithDogOrBird,
+            {"dogOrBird": {"birdType": "Sparrow", "name": "Fido"}},
+            ModelWithDogOrBird(dog_or_bird=Sparrow(bird_type="Sparrow", name="Fido")),
+        )
+        assert_model_decode_encode(
+            ModelWithDogOrBird,
+            {"dogOrBird": {"birdType": "Sparrow", "name": "Fido"}},
+            ModelWithDogOrBird(dog_or_bird=Sparrow(bird_type="Sparrow", name="Fido")),
+        )
