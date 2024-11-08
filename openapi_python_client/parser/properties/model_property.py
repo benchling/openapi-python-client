@@ -22,11 +22,11 @@ class ModelProperty(Property):
     references: List[oai.Reference]
     required_properties: List[Property]
     optional_properties: List[Property]
-    discriminator_property: Optional[str]
-    discriminator_mappings: Dict[str, Property]
 
     relative_imports: Set[str]
     additional_properties: Union[bool, Property]
+    discriminator_property: Optional[str] = None
+    discriminator_mappings: Dict[str, Property] = {}
     _json_type_string: ClassVar[str] = "Dict[str, Any]"
 
     template: ClassVar[str] = "model_property.pyi"

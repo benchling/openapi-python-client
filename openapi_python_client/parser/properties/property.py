@@ -28,7 +28,7 @@ class Property:
     default: Optional[str] = attr.ib()
     python_name: str = attr.ib(init=False)
     description: Optional[str]
-    read_only: bool
+    read_only: bool = attr.ib(default=False, kw_only=True)
 
     template: ClassVar[Optional[str]] = None
     json_is_dict: ClassVar[bool] = False

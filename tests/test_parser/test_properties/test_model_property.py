@@ -29,9 +29,6 @@ def test_get_type_string(no_optional, nullable, required, expected):
         required_properties=[],
         relative_imports=set(),
         additional_properties=False,
-        read_only=False,
-        discriminator_property=None,
-        discriminator_mappings={},
     )
 
     assert prop.get_type_string(no_optional=no_optional) == expected
@@ -48,13 +45,10 @@ def test_get_imports():
         reference=Reference(class_name="MyClass", module_name="my_module"),
         references=[],
         description="",
-        read_only=False,
         optional_properties=[],
         required_properties=[],
         relative_imports=set(),
         additional_properties=False,
-        discriminator_property=None,
-        discriminator_mappings={},
     )
 
     assert prop.get_imports(prefix="..") == {

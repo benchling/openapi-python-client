@@ -14,7 +14,7 @@ def test_response_from_data_no_content():
 
     assert response == Response(
         status_code=200,
-        prop=NoneProperty(name="response_200", default=None, nullable=False, required=True, description=None, read_only=False),
+        prop=NoneProperty(name="response_200", default=None, nullable=False, required=True, description=None),
         source="None",
     )
 
@@ -35,7 +35,7 @@ def test_response_from_data_no_content_schema():
     response, schemas = response_from_data(status_code=200, data=data, schemas=Schemas(), parent_name="parent")
     assert response == Response(
         status_code=200,
-        prop=NoneProperty(name="response_200", default=None, nullable=False, required=True, description=None, read_only=False),
+        prop=NoneProperty(name="response_200", default=None, nullable=False, required=True, description=None),
         source="None",
     )
 
@@ -60,7 +60,7 @@ def test_response_from_data_property_error(mocker):
 def test_response_from_data_property(mocker):
     from openapi_python_client.parser import responses
 
-    prop = StringProperty(name="prop", required=True, nullable=False, default=None, description=None, read_only=False)
+    prop = StringProperty(name="prop", required=True, nullable=False, default=None, description=None)
     property_from_data = mocker.patch.object(responses, "property_from_data", return_value=(prop, Schemas()))
     data = oai.Response.construct(
         description="", content={"application/json": oai.MediaType.construct(media_type_schema="something")}
@@ -82,7 +82,7 @@ def test_response_from_data_property(mocker):
 def test_response_from_data_property_of_type_text_yaml(mocker):
     from openapi_python_client.parser import responses
 
-    prop = StringProperty(name="prop", required=True, nullable=False, default=None, description=None, read_only=False)
+    prop = StringProperty(name="prop", required=True, nullable=False, default=None, description=None)
     property_from_data = mocker.patch.object(responses, "property_from_data", return_value=(prop, Schemas()))
     data = oai.Response.construct(
         description="", content={"text/yaml": oai.MediaType.construct(media_type_schema="something")}
