@@ -5,6 +5,8 @@ from typing import Any, ClassVar, cast
 
 from attr import define, evolve
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ... import Config
 from ... import schema as oai
 from ...utils import PythonIdentifier
@@ -21,9 +23,8 @@ class UnionProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: PythonIdentifier
-    description: str | None
-    example: str | None
     inner_properties: list[PropertyProtocol]
+    common: CommonAttributes = CommonAttributes()
     template: ClassVar[str] = "union_property.py.jinja"
 
     @classmethod
@@ -84,8 +85,6 @@ class UnionProperty(PropertyProtocol):
             default=None,
             inner_properties=sub_properties,
             python_name=PythonIdentifier(value=name, prefix=config.field_prefix),
-            description=data.description,
-            example=data.example,
         )
         default_or_error = prop.convert_value(data.default)
         if isinstance(default_or_error, PropertyError):

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 __all__ = ["PropertyProtocol", "Value"]
 
 from abc import abstractmethod
@@ -56,8 +58,7 @@ class PropertyProtocol(Protocol):
     }
     default: Value | None
     python_name: PythonIdentifier
-    description: str | None
-    example: str | None
+    common: CommonAttributes
 
     template: ClassVar[str] = "any_property.py.jinja"
     json_is_dict: ClassVar[bool] = False
@@ -185,3 +186,15 @@ class PropertyProtocol(Protocol):
             ListProperty.__name__,
             UnionProperty.__name__,
         }
+
+    @property
+    def description(self) -> str | None:
+        return self.common.description
+
+    @property
+    def example(self) -> str | None:
+        return self.common.example
+
+    @property
+    def read_only(self) -> bool:
+        return self.common.read_only

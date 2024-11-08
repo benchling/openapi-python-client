@@ -6,8 +6,6 @@ from openapi_python_client.parser.properties.protocol import Value
 def test_invalid_default():
     err = FloatProperty.build(
         default="not a float",
-        description=None,
-        example=None,
         required=False,
         python_name="not_a_float",
         name="not_a_float",
@@ -28,8 +26,6 @@ def test_convert_from_float():
 def test_invalid_type_default():
     err = FloatProperty.build(
         default=True,
-        description=None,
-        example=None,
         required=False,
         python_name="not_a_float",
         name="not_a_float",

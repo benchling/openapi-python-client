@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 __all__ = ["LiteralEnumProperty"]
 
 from typing import Any, ClassVar, List, Union, cast
@@ -27,11 +29,10 @@ class LiteralEnumProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: utils.PythonIdentifier
-    description: str | None
-    example: str | None
     values: set[ValueType]
     class_info: Class
     value_type: type[ValueType]
+    common: CommonAttributes = CommonAttributes()
 
     template: ClassVar[str] = "literal_enum_property.py.jinja"
 
@@ -83,8 +84,6 @@ class LiteralEnumProperty(PropertyProtocol):
                     required=required,
                     default="None",
                     python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-                    description=None,
-                    example=None,
                 ),
                 schemas,
             )
@@ -140,8 +139,6 @@ class LiteralEnumProperty(PropertyProtocol):
             value_type=value_type,
             default=None,
             python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-            description=data.description,
-            example=data.example,
         )
         checked_default = prop.convert_value(data.default)
         if isinstance(checked_default, PropertyError):

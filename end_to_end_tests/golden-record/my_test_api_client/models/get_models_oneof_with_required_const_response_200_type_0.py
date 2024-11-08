@@ -21,19 +21,16 @@ class GetModelsOneofWithRequiredConstResponse200Type0:
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        type = self.type
-
-        color = self.color
+        prop1 = self.type
+        prop2 = self.color
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "type": type,
-            }
-        )
-        if color is not UNSET:
-            field_dict["color"] = color
+        field_dict = {
+            **field_dict,
+            "type": prop1,
+            **({} if prop2 is UNSET else {"color": prop2}),
+        }
 
         return field_dict
 

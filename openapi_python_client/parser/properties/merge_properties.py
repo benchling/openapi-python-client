@@ -188,8 +188,7 @@ def _merge_common_attributes(base: PropertyT, *extend_with: PropertyProtocol) ->
             current,  # type: ignore # can't prove that every property type is an attrs class, but it is
             required=current.required or override.required,
             default=override_default or current.default,
-            description=override.description or current.description,
-            example=override.example or current.example,
+            common=current.common.override_with(override.common),
         )
     return current
 

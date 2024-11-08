@@ -25,6 +25,7 @@ from openapi_python_client.parser.properties import (
     StringProperty,
     UnionProperty,
 )
+from openapi_python_client.parser.properties.common_attributes import DEFAULT_COMMON, CommonAttributes
 from openapi_python_client.parser.properties.float import FloatProperty
 from openapi_python_client.parser.properties.protocol import PropertyType, Value
 from openapi_python_client.schema.openapi_schema_pydantic import Parameter
@@ -61,7 +62,6 @@ def model_property_factory() -> ModelFactory:
     def _factory(**kwargs):
         kwargs = _common_kwargs(kwargs)
         kwargs = {
-            "description": "",
             "class_info": Class(name=ClassName("MyClass", ""), module_name=PythonIdentifier("my_module", "")),
             "data": oai.Schema.model_construct(),
             "roots": set(),
@@ -71,7 +71,6 @@ def model_property_factory() -> ModelFactory:
             "lazy_imports": None,
             "additional_properties": None,
             "python_name": "",
-            "example": "",
             **kwargs,
         }
         return ModelProperty(**kwargs)
@@ -102,8 +101,7 @@ class SimpleFactory(Protocol[PropertyType]):
         default: Value | None = None,
         name: str | None = None,
         required: bool | None = None,
-        description: str | None = None,
-        example: str | None = None,
+        common: CommonAttributes = DEFAULT_COMMON,
     ) -> PropertyType: ...
 
 
@@ -118,8 +116,7 @@ class EnumFactory(Protocol[PropertyType]):
         class_info: Class | None = None,
         value_type: type | None = None,
         python_name: PythonIdentifier | None = None,
-        description: str | None = None,
-        example: str | None = None,
+        common: CommonAttributes = DEFAULT_COMMON,
     ) -> PropertyType: ...
 
 
@@ -319,8 +316,6 @@ def _common_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         "name": "test",
         "required": True,
         "default": None,
-        "description": None,
-        "example": None,
         **kwargs,
     }
     if not kwargs.get("python_name"):

@@ -5,6 +5,8 @@ from uuid import UUID
 
 from attr import define
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ... import schema as oai
 from ...utils import PythonIdentifier
 from ..errors import PropertyError
@@ -19,8 +21,7 @@ class UuidProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: PythonIdentifier
-    description: str | None
-    example: str | None
+    common: CommonAttributes = CommonAttributes()
 
     _type_string: ClassVar[str] = "UUID"
     _json_type_string: ClassVar[str] = "str"
@@ -39,8 +40,6 @@ class UuidProperty(PropertyProtocol):
         required: bool,
         default: Any,
         python_name: PythonIdentifier,
-        description: str | None,
-        example: str | None,
     ) -> UuidProperty | PropertyError:
         checked_default = cls.convert_value(default)
         if isinstance(checked_default, PropertyError):
@@ -51,8 +50,6 @@ class UuidProperty(PropertyProtocol):
             required=required,
             default=checked_default,
             python_name=python_name,
-            description=description,
-            example=example,
         )
 
     @classmethod

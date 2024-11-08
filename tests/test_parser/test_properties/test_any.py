@@ -1,3 +1,4 @@
+from openapi_python_client import schema as oai
 from openapi_python_client.parser.properties import AnyProperty
 from openapi_python_client.utils import PythonIdentifier
 
@@ -8,6 +9,4 @@ def test_default() -> None:
         required=True,
         default=42,
         python_name=PythonIdentifier("test", ""),
-        description="test",
-        example="test",
     )

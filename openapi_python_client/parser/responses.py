@@ -6,6 +6,7 @@ from typing import Optional, Tuple, TypedDict, Union
 from attrs import define
 
 from openapi_python_client import utils
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
 
 from .. import Config
 from .. import schema as oai
@@ -72,8 +73,9 @@ def empty_response(
             default=None,
             required=True,
             python_name=PythonIdentifier(value=response_name, prefix=config.field_prefix),
-            description=data.description if isinstance(data, oai.Response) else None,
-            example=None,
+            common=CommonAttributes(
+                description=(data.description or None) if isinstance(data, oai.Response) else None,
+            ),
         ),
         source=NONE_SOURCE,
     )

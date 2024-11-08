@@ -4,6 +4,8 @@ from typing import Any, ClassVar
 
 from attr import define
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ...utils import PythonIdentifier
 from .protocol import PropertyProtocol, Value
 
@@ -19,16 +21,12 @@ class AnyProperty(PropertyProtocol):
         required: bool,
         default: Any,
         python_name: PythonIdentifier,
-        description: str | None,
-        example: str | None,
     ) -> AnyProperty:
         return cls(
             name=name,
             required=required,
             default=AnyProperty.convert_value(default),
             python_name=python_name,
-            description=description,
-            example=example,
         )
 
     @classmethod
@@ -45,7 +43,7 @@ class AnyProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: PythonIdentifier
-    description: str | None
-    example: str | None
+    common: CommonAttributes = CommonAttributes()
+    read_only: bool = False
     _type_string: ClassVar[str] = "Any"
     _json_type_string: ClassVar[str] = "Any"

@@ -4,6 +4,8 @@ from typing import Any, ClassVar
 
 from attr import define
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ... import Config, utils
 from ... import schema as oai
 from ..errors import PropertyError
@@ -19,9 +21,8 @@ class ListProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: utils.PythonIdentifier
-    description: str | None
-    example: str | None
     inner_property: PropertyProtocol
+    common: CommonAttributes = CommonAttributes()
     template: ClassVar[str] = "list_property.py.jinja"
 
     @classmethod
@@ -96,8 +97,6 @@ class ListProperty(PropertyProtocol):
                 default=None,
                 inner_property=inner_prop,
                 python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-                description=data.description,
-                example=data.example,
             ),
             schemas,
         )

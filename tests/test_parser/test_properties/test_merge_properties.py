@@ -4,6 +4,7 @@ import pytest
 from attr import evolve
 
 from openapi_python_client.parser.errors import PropertyError
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
 from openapi_python_client.parser.properties.float import FloatProperty
 from openapi_python_client.parser.properties.int import IntProperty
 from openapi_python_client.parser.properties.merge_properties import merge_properties
@@ -37,8 +38,8 @@ def test_merge_basic_attributes_same_type(
         without_default = evolve(basic_prop, default=None)
         assert merge_properties(basic_prop, without_default) == basic_prop
         assert merge_properties(without_default, basic_prop) == basic_prop
-        with_desc1 = evolve(basic_prop, description="desc1")
-        with_desc2 = evolve(basic_prop, description="desc2")
+        with_desc1 = evolve(basic_prop, common=evolve(basic_prop.common, description="desc1"))
+        with_desc2 = evolve(basic_prop, common=evolve(basic_prop.common, description="desc2"))
         assert merge_properties(basic_prop, with_desc1) == with_desc1
         assert merge_properties(with_desc1, basic_prop) == with_desc1
         assert merge_properties(with_desc1, with_desc2) == with_desc2
@@ -69,11 +70,11 @@ def test_incompatible_types(
 
 
 def test_merge_int_with_float(int_property_factory, float_property_factory):
-    int_prop = int_property_factory(description="desc1")
-    float_prop = float_property_factory(default=Value("2", 2), description="desc2")
+    int_prop = int_property_factory(common=CommonAttributes(description="desc1"))
+    float_prop = float_property_factory(default=Value("2", 2), common=CommonAttributes(description="desc2"))
 
     assert merge_properties(int_prop, float_prop) == (
-        evolve(int_prop, default=Value("2", 2), description=float_prop.description)
+        evolve(int_prop, default=Value("2", 2), common=evolve(int_prop.common, description=float_prop.description))
     )
     assert merge_properties(float_prop, int_prop) == evolve(int_prop, default=Value("2", 2))
 
@@ -91,13 +92,12 @@ def test_merge_with_any(
     string_property_factory,
     model_property_factory,
 ):
-    original_desc = "description"
     props = [
-        boolean_property_factory(default=Value("True", "True"), description=original_desc),
-        int_property_factory(default=Value("1", "1"), description=original_desc),
-        float_property_factory(default=Value("1.5", "1.5"), description=original_desc),
-        string_property_factory(default=StringProperty.convert_value("x"), description=original_desc),
-        model_property_factory(description=original_desc),
+        boolean_property_factory(default=Value("True", "True")),
+        int_property_factory(default=Value("1", "1")),
+        float_property_factory(default=Value("1.5", "1.5")),
+        string_property_factory(default=StringProperty.convert_value("x")),
+        model_property_factory(),
     ]
     any_prop = any_property_factory()
     for prop in props:
@@ -109,23 +109,23 @@ def test_merge_with_any(
 def test_merge_enums(literal_enums, enum_property_factory, literal_enum_property_factory, config):
     if literal_enums:
         enum_with_fewer_values = literal_enum_property_factory(
-            description="desc1",
+            common=CommonAttributes(description="desc1"),
             values={"A", "B"},
             value_type=str,
         )
         enum_with_more_values = literal_enum_property_factory(
-            example="example2",
+            common=CommonAttributes(example="example2"),
             values={"A", "B", "C"},
             value_type=str,
         )
     else:
         enum_with_fewer_values = enum_property_factory(
-            description="desc1",
+            common=CommonAttributes(description="desc1"),
             values={"A": "A", "B": "B"},
             value_type=str,
         )
         enum_with_more_values = enum_property_factory(
-            example="example2",
+            common=CommonAttributes(example="example2"),
             values={"A": "A", "B": "B", "C": "C"},
             value_type=str,
         )
@@ -139,11 +139,11 @@ def test_merge_enums(literal_enums, enum_property_factory, literal_enum_property
         enum_with_more_values,
         values=enum_with_fewer_values.values,
         class_info=enum_with_fewer_values.class_info,
-        description=enum_with_fewer_values.description,
+        common=evolve(enum_with_more_values.common, description=enum_with_fewer_values.description),
     )
     assert merge_properties(enum_with_more_values, enum_with_fewer_values) == evolve(
         enum_with_fewer_values,
-        example=enum_with_more_values.example,
+        common=evolve(enum_with_fewer_values.common, example=enum_with_more_values.example),
     )
 
 
@@ -151,20 +151,18 @@ def test_merge_enums(literal_enums, enum_property_factory, literal_enum_property
 def test_merge_string_with_string_enum(
     literal_enums, string_property_factory, enum_property_factory, literal_enum_property_factory
 ):
-    string_prop = string_property_factory(default=Value("A", "A"), description="desc1", example="example1")
+    string_prop = string_property_factory(default=Value("A", "A"), common=CommonAttributes(description="desc1", example="example1"))
     enum_prop = (
         literal_enum_property_factory(
             default=Value("'B'", "B"),
-            description="desc2",
-            example="example2",
+            common=CommonAttributes(description="desc2", example="example2"),
             values={"A", "B"},
             value_type=str,
         )
         if literal_enums
         else enum_property_factory(
             default=Value("test.B", "B"),
-            description="desc2",
-            example="example2",
+            common=CommonAttributes(description="desc2", example="example2"),
             values={"A": "A", "B": "B"},
             value_type=str,
         )
@@ -175,8 +173,7 @@ def test_merge_string_with_string_enum(
         enum_prop,
         required=True,
         default=Value("'A'" if literal_enums else "test.A", "A"),
-        description=string_prop.description,
-        example=string_prop.example,
+        common=string_prop.common,
     )
 
 
@@ -184,29 +181,25 @@ def test_merge_string_with_string_enum(
 def test_merge_int_with_int_enum(
     literal_enums, int_property_factory, enum_property_factory, literal_enum_property_factory
 ):
-    int_prop = int_property_factory(default=Value("1", 1), description="desc1", example="example1")
+    int_prop = int_property_factory(default=Value("1", 1), common=CommonAttributes(description="desc1", example="example1"))
     enum_prop = (
         literal_enum_property_factory(
             default=Value("1", 1),
-            description="desc2",
-            example="example2",
+            common=CommonAttributes(description="desc2", example="example2"),
             values={1, 2},
             value_type=int,
         )
         if literal_enums
         else enum_property_factory(
             default=Value("test.VALUE_1", 1),
-            description="desc2",
-            example="example2",
+            common=CommonAttributes(description="desc2", example="example2"),
             values={"VALUE_1": 1, "VALUE_2": 2},
             value_type=int,
         )
     )
 
     assert merge_properties(int_prop, enum_prop) == evolve(enum_prop, required=True)
-    assert merge_properties(enum_prop, int_prop) == evolve(
-        enum_prop, required=True, description=int_prop.description, example=int_prop.example
-    )
+    assert merge_properties(enum_prop, int_prop) == evolve(enum_prop, required=True, common=int_prop.common)
 
 
 @pytest.mark.parametrize("literal_enums", (False, True))
@@ -254,14 +247,14 @@ def test_merge_string_with_formatted_string(
     file_property_factory,
     string_property_factory,
 ):
-    string_prop = string_property_factory(description="a plain string")
+    string_prop = string_property_factory(common=CommonAttributes(description="a plain string"))
     string_prop_with_invalid_default = string_property_factory(
         default=StringProperty.convert_value("plain string value")
     )
     formatted_props = [
-        date_property_factory(description="a date"),
-        date_time_property_factory(description="a datetime"),
-        file_property_factory(description="a file"),
+        date_property_factory(common=CommonAttributes(description="a date")),
+        date_time_property_factory(common=CommonAttributes(description="a datetime")),
+        file_property_factory(common=CommonAttributes(description="a file")),
     ]
     for formatted_prop in formatted_props:
         merged1 = merge_properties(string_prop, formatted_prop)
@@ -277,8 +270,8 @@ def test_merge_string_with_formatted_string(
 
 
 def test_merge_lists(int_property_factory, list_property_factory, string_property_factory):
-    string_prop_1 = string_property_factory(description="desc1")
-    string_prop_2 = string_property_factory(example="desc2")
+    string_prop_1 = string_property_factory()
+    string_prop_2 = string_property_factory()
     int_prop = int_property_factory()
     list_prop_1 = list_property_factory(inner_property=string_prop_1)
     list_prop_2 = list_property_factory(inner_property=string_prop_2)

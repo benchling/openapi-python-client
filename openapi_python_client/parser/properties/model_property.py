@@ -5,6 +5,8 @@ from typing import Any, ClassVar, NamedTuple
 
 from attrs import define, evolve
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ... import Config, utils
 from ... import schema as oai
 from ...utils import PythonIdentifier
@@ -22,16 +24,15 @@ class ModelProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: utils.PythonIdentifier
-    example: str | None
     class_info: Class
     data: oai.Schema
-    description: str
     roots: set[ReferencePath | utils.ClassName]
     required_properties: list[Property] | None
     optional_properties: list[Property] | None
     relative_imports: set[str] | None
     lazy_imports: set[str] | None
     additional_properties: Property | None
+    common: CommonAttributes = CommonAttributes()
     _json_type_string: ClassVar[str] = "Dict[str, Any]"
 
     template: ClassVar[str] = "model_property.py.jinja"
@@ -105,12 +106,10 @@ class ModelProperty(PropertyProtocol):
             relative_imports=relative_imports,
             lazy_imports=lazy_imports,
             additional_properties=additional_properties,
-            description=data.description or "",
             default=None,
             required=required,
             name=name,
             python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-            example=data.example,
         )
         if class_info.name in schemas.classes_by_name:
             error = PropertyError(
@@ -343,9 +342,7 @@ ANY_ADDITIONAL_PROPERTY = AnyProperty.build(
     name="additional",
     required=True,
     default=None,
-    description="",
     python_name=PythonIdentifier(value="additional", prefix=""),
-    example=None,
 )
 
 

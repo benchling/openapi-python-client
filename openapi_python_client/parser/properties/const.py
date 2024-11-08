@@ -4,6 +4,8 @@ from typing import Any, ClassVar, overload
 
 from attr import define
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ...utils import PythonIdentifier
 from ..errors import PropertyError
 from .protocol import PropertyProtocol, Value
@@ -19,8 +21,7 @@ class ConstProperty(PropertyProtocol):
     value: Value
     default: Value | None
     python_name: PythonIdentifier
-    description: str | None
-    example: None
+    common: CommonAttributes = CommonAttributes()
     template: ClassVar[str] = "const_property.py.jinja"
 
     @classmethod
@@ -32,7 +33,6 @@ class ConstProperty(PropertyProtocol):
         name: str,
         python_name: PythonIdentifier,
         required: bool,
-        description: str | None,
     ) -> ConstProperty | PropertyError:
         """
         Create a `ConstProperty` the right way.
@@ -43,7 +43,7 @@ class ConstProperty(PropertyProtocol):
             name: The name of the property where it appears in the OpenAPI document.
             required: Whether this property is required where it's being used.
             python_name: The name used to represent this variable/property in generated Python code
-            description: The description of this property, used for docstrings
+            data: The original schema data
         """
         value = cls._convert_value(const)
 
@@ -53,8 +53,6 @@ class ConstProperty(PropertyProtocol):
             name=name,
             required=required,
             default=None,
-            description=description,
-            example=None,
         )
         converted_default = prop.convert_value(default)
         if isinstance(converted_default, PropertyError):

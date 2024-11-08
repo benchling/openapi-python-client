@@ -7,8 +7,6 @@ from openapi_python_client.utils import PythonIdentifier
 def test_invalid_default():
     err = IntProperty.build(
         default="not a float",
-        description=None,
-        example=None,
         required=False,
         python_name="not_a_float",
         name="not_a_float",
@@ -24,8 +22,6 @@ def test_convert_from_string():
 def test_invalid_type_default():
     err = IntProperty.build(
         default=True,
-        description=None,
-        example=None,
         required=False,
         python_name=PythonIdentifier("not_a_float", ""),
         name="not_a_float",

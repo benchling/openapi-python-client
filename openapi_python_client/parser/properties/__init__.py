@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 __all__ = [
     "AnyProperty",
     "Class",
@@ -61,8 +63,6 @@ def _string_based_property(
             required=required,
             default=data.default,
             python_name=python_name,
-            description=data.description,
-            example=data.example,
         )
     if string_format == "date":
         return DateProperty.build(
@@ -70,8 +70,6 @@ def _string_based_property(
             required=required,
             default=data.default,
             python_name=python_name,
-            description=data.description,
-            example=data.example,
         )
     if string_format == "binary":
         return FileProperty.build(
@@ -79,8 +77,6 @@ def _string_based_property(
             required=required,
             default=None,
             python_name=python_name,
-            description=data.description,
-            example=data.example,
         )
     if string_format == "uuid":
         return UuidProperty.build(
@@ -88,16 +84,12 @@ def _string_based_property(
             required=required,
             default=data.default,
             python_name=python_name,
-            description=data.description,
-            example=data.example,
         )
     return StringProperty.build(
         name=name,
         default=data.default,
         required=required,
         python_name=python_name,
-        description=data.description,
-        example=data.example,
     )
 
 
@@ -137,7 +129,7 @@ def _property_from_ref(
     return prop, schemas
 
 
-def property_from_data(  # noqa: PLR0911, PLR0912
+def property_from_data(
     name: str,
     required: bool,
     data: oai.Reference | oai.Schema,
@@ -161,6 +153,24 @@ def property_from_data(  # noqa: PLR0911, PLR0912
             roots=roots,
         )
 
+    prop, schemas = _property_from_data(name, required, data, schemas, parent_name, config, process_properties, roots)
+    if not isinstance(prop, PropertyError) and isinstance(data, oai.Schema):
+        prop.common = CommonAttributes.from_data(data)
+        # We are mutating the object here instead of using evolve() because we may have already
+        # saved a reference to the object in our various mappings
+    return prop, schemas
+
+
+def _property_from_data(  # noqa: PLR0911, PLR0912
+    name: str,
+    required: bool,
+    data: oai.Reference | oai.Schema,
+    schemas: Schemas,
+    parent_name: str,
+    config: Config,
+    process_properties: bool = True,
+    roots: set[ReferencePath | utils.ClassName] | None = None,
+) -> tuple[Property | PropertyError, Schemas]:
     sub_data: list[oai.Schema | oai.Reference] = data.allOf + data.anyOf + data.oneOf
     # A union of a single reference should just be passed through to that reference (don't create copy class)
     if len(sub_data) == 1 and isinstance(sub_data[0], oai.Reference):
@@ -190,8 +200,6 @@ def property_from_data(  # noqa: PLR0911, PLR0912
                 required=required,
                 default=data.default,
                 python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-                description=data.description,
-                example=data.example,
             ),
             schemas,
         )
@@ -230,7 +238,6 @@ def property_from_data(  # noqa: PLR0911, PLR0912
                 default=data.default,
                 const=data.const,
                 python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-                description=data.description,
             ),
             schemas,
         )
@@ -246,8 +253,6 @@ def property_from_data(  # noqa: PLR0911, PLR0912
                 default=data.default,
                 required=required,
                 python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-                description=data.description,
-                example=data.example,
             ),
             schemas,
         )
@@ -258,20 +263,16 @@ def property_from_data(  # noqa: PLR0911, PLR0912
                 default=data.default,
                 required=required,
                 python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-                description=data.description,
-                example=data.example,
             ),
             schemas,
         )
     if data.type == oai.DataType.NULL:
         return (
-            NoneProperty(
+            NoneProperty.build(
                 name=name,
                 required=required,
                 default=None,
                 python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-                description=data.description,
-                example=data.example,
             ),
             schemas,
         )
@@ -303,8 +304,6 @@ def property_from_data(  # noqa: PLR0911, PLR0912
             required=required,
             default=data.default,
             python_name=utils.PythonIdentifier(value=name, prefix=config.field_prefix),
-            description=data.description,
-            example=data.example,
         ),
         schemas,
     )

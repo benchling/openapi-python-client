@@ -8,7 +8,6 @@ def test_default_doesnt_match_const() -> None:
         required=True,
         default="not the value",
         python_name="test",
-        description=None,
         const="the value",
     )
 
@@ -21,7 +20,6 @@ def test_non_string_const() -> None:
         required=True,
         default=123,
         python_name="test",
-        description=None,
         const=123,
     )
 

@@ -3,6 +3,7 @@ from typing import Optional
 import pytest
 from attr import evolve
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
 import openapi_python_client.schema as oai
 from openapi_python_client.parser.errors import PropertyError
 from openapi_python_client.parser.properties import Schemas, StringProperty
@@ -81,8 +82,6 @@ class TestBuild:
                     required=True,
                     default=None,
                     python_name="additional_property",
-                    description=None,
-                    example=None,
                 ),
             ),
         ],
@@ -154,7 +153,6 @@ class TestBuild:
             class_info=class_info,
             required_properties=[string_property_factory(name="req", required=True)],
             optional_properties=[date_time_property_factory(name="opt", required=False)],
-            description=data.description,
             relative_imports={
                 "from dateutil.parser import isoparse",
                 "from typing import cast",
@@ -318,7 +316,6 @@ class TestBuild:
             required=required,
             class_info=class_info,
             data=data,
-            description=data.description,
             roots={*roots, class_info.name},
         )
 

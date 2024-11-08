@@ -4,6 +4,8 @@ from typing import Any, ClassVar
 
 from attr import define
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ... import schema as oai
 from ...utils import PythonIdentifier
 from ..errors import PropertyError
@@ -18,8 +20,7 @@ class FloatProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: PythonIdentifier
-    description: str | None
-    example: str | None
+    common: CommonAttributes = CommonAttributes()
 
     _type_string: ClassVar[str] = "float"
     _json_type_string: ClassVar[str] = "float"
@@ -38,8 +39,6 @@ class FloatProperty(PropertyProtocol):
         required: bool,
         default: Any,
         python_name: PythonIdentifier,
-        description: str | None,
-        example: str | None,
     ) -> FloatProperty | PropertyError:
         checked_default = cls.convert_value(default)
         if isinstance(checked_default, PropertyError):
@@ -50,8 +49,6 @@ class FloatProperty(PropertyProtocol):
             required=required,
             default=checked_default,
             python_name=python_name,
-            description=description,
-            example=example,
         )
 
     @classmethod

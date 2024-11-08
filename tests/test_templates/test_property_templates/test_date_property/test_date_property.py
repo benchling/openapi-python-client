@@ -11,8 +11,6 @@ def date_property(required=True, default=None) -> DateProperty:
         required=required,
         default=default,
         python_name="a_prop",
-        description="",
-        example="",
     )
 
 

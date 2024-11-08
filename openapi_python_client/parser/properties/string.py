@@ -4,6 +4,8 @@ from typing import Any, ClassVar, overload
 
 from attr import define
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
 from ... import schema as oai
 from ... import utils
 from ...utils import PythonIdentifier
@@ -19,8 +21,8 @@ class StringProperty(PropertyProtocol):
     required: bool
     default: Value | None
     python_name: PythonIdentifier
-    description: str | None
-    example: str | None
+    common: CommonAttributes = CommonAttributes()
+
     _type_string: ClassVar[str] = "str"
     _json_type_string: ClassVar[str] = "str"
     _allowed_locations: ClassVar[set[oai.ParameterLocation]] = {
@@ -37,8 +39,6 @@ class StringProperty(PropertyProtocol):
         required: bool,
         default: Any,
         python_name: PythonIdentifier,
-        description: str | None,
-        example: str | None,
     ) -> StringProperty | PropertyError:
         checked_default = cls.convert_value(default)
         return cls(
@@ -46,8 +46,6 @@ class StringProperty(PropertyProtocol):
             required=required,
             default=checked_default,
             python_name=python_name,
-            description=description,
-            example=example,
         )
 
     @classmethod

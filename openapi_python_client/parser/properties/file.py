@@ -4,6 +4,9 @@ from typing import Any, ClassVar
 
 from attr import define
 
+from openapi_python_client.parser.properties.common_attributes import CommonAttributes
+
+from ... import schema as oai
 from ...utils import PythonIdentifier
 from ..errors import PropertyError
 from .protocol import PropertyProtocol
@@ -17,8 +20,7 @@ class FileProperty(PropertyProtocol):
     required: bool
     default: None
     python_name: PythonIdentifier
-    description: str | None
-    example: str | None
+    common: CommonAttributes = CommonAttributes()
 
     _type_string: ClassVar[str] = "File"
     # Return type of File.to_tuple()
@@ -32,8 +34,6 @@ class FileProperty(PropertyProtocol):
         required: bool,
         default: Any,
         python_name: PythonIdentifier,
-        description: str | None,
-        example: str | None,
     ) -> FileProperty | PropertyError:
         default_or_err = cls.convert_value(default)
         if isinstance(default_or_err, PropertyError):
@@ -44,8 +44,6 @@ class FileProperty(PropertyProtocol):
             required=required,
             default=default_or_err,
             python_name=python_name,
-            description=description,
-            example=example,
         )
 
     @classmethod
