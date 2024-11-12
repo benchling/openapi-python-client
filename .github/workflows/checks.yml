@@ -33,30 +33,21 @@ jobs:
           key: ${{ runner.os }}-${{ steps.get_python_version.outputs.python_version }}-dependencies-${{ hashFiles('**/pdm.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ steps.get_python_version.outputs.python_version }}-dependencies
-      - name: Install PDM
-        run: pip install pdm
+      - name: Install Poetry
+        run: pip install poetry
 
       - name: Install Dependencies
-        run: pdm install
-
-      - name: Check formatting
-        run: pdm run ruff format . --check
-
-      - name: Run mypy
-        run: pdm mypy --show-error-codes
-
-      - name: Lint
-        run: pdm run ruff check .
+        run: poetry install
 
       - name: Run pytest without coverage
         if: matrix.os != 'ubuntu-latest'
-        run: pdm test
+        run: task unit
         env:
           TASKIPY: true
 
       - name: Run pytest with coverage
         if: matrix.os == 'ubuntu-latest'
-        run: pdm test_with_coverage
+        run: task code_coverage
         env:
           TASKIPY: true
       
