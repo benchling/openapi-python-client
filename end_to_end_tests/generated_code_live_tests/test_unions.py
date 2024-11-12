@@ -1,4 +1,6 @@
 from typing import ForwardRef, Union
+
+import pytest
 from end_to_end_tests.end_to_end_test_helpers import (
     assert_model_decode_encode,
     assert_model_property_type_hint,
@@ -147,3 +149,85 @@ class TestOneOf:
         assert_model_property_type_hint(
             ModelWithUnionOfOne, "required_thing", "ThingA"
         )
+
+
+@with_generated_client_fixture(
+"""
+components:
+  schemas:
+    ModelType1:
+      type: object
+      properties:
+        modelType: {"type": "string"}
+        name: {"type": "string"}
+      required: ["modelType"]
+    ModelType2:
+      type: object
+      properties:
+        modelType: {"type": "string"}
+        name: {"type": "string"}
+      required: ["modelType"]
+    WithDiscriminatedUnion:
+      type: object
+      properties:
+        unionProp:
+          oneOf:
+            - $ref: "#/components/schemas/ModelType1"
+            - $ref: "#/components/schemas/ModelType2"
+          discriminator:
+            propertyName: modelType
+            mapping:
+              "type1": "#/components/schemas/ModelType1"
+              "type2": "#/components/schemas/ModelType2"
+              "another-value": "#/components/schemas/ModelType2"
+    WithDiscriminatedUnionImplicitMapping:
+      type: object
+      properties:
+        unionProp:
+          oneOf:
+            - $ref: "#/components/schemas/ModelType1"
+            - $ref: "#/components/schemas/ModelType2"
+          discriminator:
+            propertyName: modelType
+""")
+@with_generated_code_imports(
+    ".models.ModelType1",
+    ".models.ModelType2",
+    ".models.WithDiscriminatedUnion",
+    ".models.WithDiscriminatedUnionImplicitMapping",
+)
+class TestDiscriminators:
+    def test_with_explicit_mapping(self, ModelType1, ModelType2, WithDiscriminatedUnion):
+        assert_model_decode_encode(
+            WithDiscriminatedUnion,
+            {"unionProp": {"modelType": "type1", "name": "a"}},
+            WithDiscriminatedUnion(union_prop=ModelType1(model_type="type1", name="a")),
+        )
+        assert_model_decode_encode(
+            WithDiscriminatedUnion,
+            {"unionProp": {"modelType": "type2", "name": "a"}},
+            WithDiscriminatedUnion(union_prop=ModelType2(model_type="type2", name="a")),
+        )
+        assert_model_decode_encode(
+            WithDiscriminatedUnion,
+            {"unionProp": {"modelType": "another-value", "name": "a"}},
+            WithDiscriminatedUnion(union_prop=ModelType2(model_type="another-value", name="a")),
+        )
+        with pytest.raises(TypeError):
+            WithDiscriminatedUnion.from_dict({"unionProp": {"modelType": "ModelType1"}})
+        with pytest.raises(TypeError):
+            WithDiscriminatedUnion.from_dict({"unionProp": {"modelType": "unknown-value"}})
+
+    def test_with_implicit_mapping(self, ModelType1, ModelType2, WithDiscriminatedUnionImplicitMapping):
+        assert_model_decode_encode(
+            WithDiscriminatedUnionImplicitMapping,
+            {"unionProp": {"modelType": "ModelType1", "name": "a"}},
+            WithDiscriminatedUnionImplicitMapping(union_prop=ModelType1(model_type="ModelType1", name="a")),
+        )
+        assert_model_decode_encode(
+            WithDiscriminatedUnionImplicitMapping,
+            {"unionProp": {"modelType": "ModelType2", "name": "a"}},
+            WithDiscriminatedUnionImplicitMapping(union_prop=ModelType2(model_type="ModelType2", name="a")),
+        )
+        with pytest.raises(TypeError):
+            WithDiscriminatedUnionImplicitMapping.from_dict({"unionProp": {"modelType": "unknown-value"}})
