@@ -167,6 +167,20 @@ components:
         modelType: {"type": "string"}
         name: {"type": "string"}
       required: ["modelType"]
+    Corgi:
+      type: object
+      properties:
+        modelType: {"type": "string"}
+        dogType: {"type": "string"}
+        name: {"type": "string"}
+      required: ["modelType"]
+    Schnauzer:
+      type: object
+      properties:
+        modelType: {"type": "string"}
+        dogType: {"type": "string"}
+        name: {"type": "string"}
+      required: ["modelType"]
     WithDiscriminatedUnion:
       type: object
       properties:
@@ -178,8 +192,8 @@ components:
             propertyName: modelType
             mapping:
               "type1": "#/components/schemas/ModelType1"
-              "type2": "#/components/schemas/ModelType2"
-              "another-value": "#/components/schemas/ModelType2"
+              "type2": "ModelType2"  # exactly equivalent to "#/components/schemas/ModelType2"
+              "another-value": "#/components/schemas/ModelType2"  # deliberately mapped to same type as previous line
     WithDiscriminatedUnionImplicitMapping:
       type: object
       properties:
@@ -189,12 +203,46 @@ components:
             - $ref: "#/components/schemas/ModelType2"
           discriminator:
             propertyName: modelType
+    WithNestedDiscriminatorsSameProperty:
+      type: object
+      properties:
+        unionProp:
+          oneOf:
+            - oneOf:
+              - $ref: "#/components/schemas/ModelType1"
+              - $ref: "#/components/schemas/ModelType2"
+              discriminator:
+                propertyName: modelType
+            - oneOf:
+              - $ref: "#/components/schemas/Corgi"
+              - $ref: "#/components/schemas/Schnauzer"
+              discriminator:
+                propertyName: modelType
+    WithNestedDiscriminatorsDifferentProperty:
+      type: object
+      properties:
+        unionProp:
+          oneOf:
+            - oneOf:
+              - $ref: "#/components/schemas/ModelType1"
+              - $ref: "#/components/schemas/ModelType2"
+              discriminator:
+                propertyName: modelType
+            - oneOf:
+              - $ref: "#/components/schemas/Corgi"
+              - $ref: "#/components/schemas/Schnauzer"
+              discriminator:
+                propertyName: dogType
 """)
 @with_generated_code_imports(
     ".models.ModelType1",
     ".models.ModelType2",
+    ".models.Corgi",
+    ".models.Schnauzer",
     ".models.WithDiscriminatedUnion",
     ".models.WithDiscriminatedUnionImplicitMapping",
+    ".models.WithNestedDiscriminatorsSameProperty",
+    ".models.WithNestedDiscriminatorsDifferentProperty",
 )
 class TestDiscriminators:
     def test_with_explicit_mapping(self, ModelType1, ModelType2, WithDiscriminatedUnion):
@@ -231,3 +279,27 @@ class TestDiscriminators:
         )
         with pytest.raises(TypeError):
             WithDiscriminatedUnionImplicitMapping.from_dict({"unionProp": {"modelType": "unknown-value"}})
+
+    def test_nested_with_same_property(self, ModelType1, Schnauzer, WithNestedDiscriminatorsSameProperty):
+        assert_model_decode_encode(
+            WithNestedDiscriminatorsSameProperty,
+            {"unionProp": {"modelType": "ModelType1", "name": "a"}},
+            WithNestedDiscriminatorsSameProperty(union_prop=ModelType1(model_type="ModelType1", name="a")),
+        )
+        assert_model_decode_encode(
+            WithNestedDiscriminatorsSameProperty,
+            {"unionProp": {"modelType": "Schnauzer", "name": "a"}},
+            WithNestedDiscriminatorsSameProperty(union_prop=Schnauzer(model_type="Schnauzer", name="a")),
+        )
+
+    def test_nested_with_different_property(self, ModelType1, Schnauzer, WithNestedDiscriminatorsDifferentProperty):
+        assert_model_decode_encode(
+            WithNestedDiscriminatorsDifferentProperty,
+            {"unionProp": {"modelType": "ModelType1", "name": "a"}},
+            WithNestedDiscriminatorsDifferentProperty(union_prop=ModelType1(model_type="ModelType1", name="a")),
+        )
+        assert_model_decode_encode(
+            WithNestedDiscriminatorsDifferentProperty,
+            {"unionProp": {"modelType": "irrelevant", "dogType": "Schnauzer", "name": "a"}},
+            WithNestedDiscriminatorsDifferentProperty(union_prop=Schnauzer(model_type="irrelevant", dog_type="Schnauzer", name="a")),
+        )
