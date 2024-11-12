@@ -25,19 +25,29 @@ if {% if property.nullable %}_{{ property.python_name }} is not None{% endif %}{
 {% macro check_type_for_construct(source) %}isinstance({{ source }}, dict){% endmacro %}
 
 {% macro transform(property, source, destination, declare_type=True, query_parameter=False) %}
+{{ transform_with_options(property, source, destination, {"declare_type": declare_type, "query_parameter": query_parameter}) }}
+{% endmacro %}
+
+{% macro transform_with_options(property, source, destination, options={}) %}
+{% set serialize_options_expr = options.get("serialize_options_expr") %}
+{% set declare_type = options.get("declare_type", True) %}
+{% set query_parameter = options.get("query_parameter", False) %}
+{% set to_dict_expr -%}
+    {{ source }}.to_dict({% if serialize_options_expr %}_serialize_options={{ serialize_options_expr }}{% endif %})
+{%- endset %}
 {% if property.required %}
 {% if property.nullable %}
-{{ destination }} = {{ source }}.to_dict() if {{ source }} else None
+{{ destination }} = {{ to_dict_expr }} if {{ source }} else None
 {% else %}
-{{ destination }} = {{ source }}.to_dict()
+{{ destination }} = {{ to_dict_expr }}
 {% endif %}
 {% else %}
 {{ destination }}{% if declare_type %}: {{ property.get_type_string(query_parameter=query_parameter, json=True) }}{% endif %} = UNSET
 if not isinstance({{ source }}, Unset):
 {% if property.nullable %}
-    {{ destination }} = {{ source }}.to_dict() if {{ source }} else None
+    {{ destination }} = {{ to_dict_expr }} if {{ source }} else None
 {% else %}
-    {{ destination }} = {{ source }}.to_dict()
+    {{ destination }} = {{ to_dict_expr }}
 {% endif %}
 {% endif %}
 {% endmacro %}

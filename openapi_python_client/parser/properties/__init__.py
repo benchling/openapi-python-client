@@ -614,7 +614,13 @@ def property_from_data(
     parent_name: str,
 ) -> Tuple[Union[Property, PropertyError], Schemas]:
     try:
-        return _property_from_data(name=name, required=required, data=data, schemas=schemas, parent_name=parent_name)
+        prop_or_error, schemas = _property_from_data(
+            name=name, required=required, data=data, schemas=schemas, parent_name=parent_name
+        )
+        if isinstance(prop_or_error, Property) and isinstance(data, oai.Schema):
+            # set common attributes that come directly from the schema & don't vary by property type
+            prop_or_error = attr.evolve(prop_or_error, read_only=False if data.readOnly is None else data.readOnly)
+        return prop_or_error, schemas
     except ValidationError:
         return PropertyError(detail="Failed to validate default value", data=data), schemas
 

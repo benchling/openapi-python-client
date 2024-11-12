@@ -732,9 +732,10 @@ class TestPropertyFromData:
             type="array",
             items={"type": "number", "default": "0.0"},
         )
-        build_list_property = mocker.patch(f"{MODULE_NAME}.build_list_property")
-        mocker.patch("openapi_python_client.utils.remove_string_escapes", return_value=name)
         schemas = Schemas()
+        build_list_property = mocker.patch(f"{MODULE_NAME}.build_list_property")
+        build_list_property.return_value = (None, schemas)
+        mocker.patch("openapi_python_client.utils.remove_string_escapes", return_value=name)
 
         response = property_from_data(name=name, required=required, data=data, schemas=schemas, parent_name="parent")
 
@@ -751,9 +752,10 @@ class TestPropertyFromData:
         data = oai.Schema(
             type="object",
         )
-        build_model_property = mocker.patch(f"{MODULE_NAME}.build_model_property")
-        mocker.patch("openapi_python_client.utils.remove_string_escapes", return_value=name)
         schemas = Schemas()
+        build_model_property = mocker.patch(f"{MODULE_NAME}.build_model_property")
+        build_model_property.return_value = (None, schemas)
+        mocker.patch("openapi_python_client.utils.remove_string_escapes", return_value=name)
 
         response = property_from_data(name=name, required=required, data=data, schemas=schemas, parent_name="parent")
 
@@ -773,9 +775,10 @@ class TestPropertyFromData:
                 {"type": "integer", "default": "0"},
             ],
         )
-        build_union_property = mocker.patch(f"{MODULE_NAME}.build_union_property")
-        mocker.patch("openapi_python_client.utils.remove_string_escapes", return_value=name)
         schemas = Schemas()
+        build_union_property = mocker.patch(f"{MODULE_NAME}.build_union_property")
+        build_union_property.return_value = (None, schemas)
+        mocker.patch("openapi_python_client.utils.remove_string_escapes", return_value=name)
 
         response = property_from_data(name=name, required=required, data=data, schemas=schemas, parent_name="parent")
 
