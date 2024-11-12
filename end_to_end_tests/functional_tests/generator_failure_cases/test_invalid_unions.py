@@ -1,14 +1,7 @@
-import pytest
-from end_to_end_tests.end_to_end_test_helpers import (
-    assert_bad_schema_warning,
-    inline_spec_should_cause_warnings,
-)
+from end_to_end_tests.functional_tests.helpers import assert_bad_schema, with_generated_client_fixture
 
 
-class TestUnionInvalidSchemas:
-    @pytest.fixture(scope="class")
-    def warnings(self):
-        return inline_spec_should_cause_warnings(
+@with_generated_client_fixture(
 """
 components:
   schemas:
@@ -22,23 +15,23 @@ components:
       anyOf:
         - type: string
         - type: array  # invalid because no items
-"""
-        )
+"""    
+)
+class TestUnionInvalidSchemas:
+    def test_invalid_reference(self, generated_client):
+        assert_bad_schema(generated_client, "UnionWithInvalidReference", "Could not find reference")
 
-    def test_invalid_reference(self, warnings):
-        assert_bad_schema_warning(warnings, "UnionWithInvalidReference", "Could not find reference")
+    def test_invalid_default(self, generated_client):
+        assert_bad_schema(generated_client, "UnionWithInvalidDefault", "Invalid int value: aaa")
 
-    def test_invalid_default(self, warnings):
-        assert_bad_schema_warning(warnings, "UnionWithInvalidDefault", "Invalid int value: aaa")
+    def test_invalid_default(self, generated_client):
+        assert_bad_schema(generated_client, "UnionWithInvalidDefault", "Invalid int value: aaa")
 
-    def test_invalid_property(self, warnings):
-        assert_bad_schema_warning(warnings, "UnionWithMalformedVariant", "Invalid property in union")
+    def test_invalid_property(self, generated_client):
+        assert_bad_schema(generated_client, "UnionWithMalformedVariant", "Invalid property in union")
 
 
-class TestInvalidDiscriminators:
-    @pytest.fixture(scope="class")
-    def warnings(self):
-        return inline_spec_should_cause_warnings(
+@with_generated_client_fixture(
 """
 components:
   schemas:
@@ -108,34 +101,33 @@ components:
                 name: {"type": "string"}
           discriminator:
             propertyName: modelType
-      
-"""
-        )
-    
-    def test_invalid_reference(self, warnings):
-        assert_bad_schema_warning(
-            warnings,
+"""    
+)
+class TestInvalidDiscriminators:
+    def test_invalid_reference(self, generated_client):
+        assert_bad_schema(
+            generated_client,
             "WithUnknownSchemaInMapping",
             'Invalid reference "#/components/schemas/DoesntExist" in discriminator mapping',
         )
 
-    def test_reference_to_schema_not_in_union(self, warnings):
-        assert_bad_schema_warning(
-            warnings,
+    def test_reference_to_schema_not_in_union(self, generated_client):
+        assert_bad_schema(
+            generated_client,
             "WithReferenceToSchemaNotInUnion",
             'Discriminator mapping referred to "ModelType3" which is not one of the schema variants',
         )
 
-    def test_non_object_variant(self, warnings):
-        assert_bad_schema_warning(
-            warnings,
+    def test_non_object_variant(self, generated_client):
+        assert_bad_schema(
+            generated_client,
             "WithNonObjectVariant",
             "All schema variants must be objects when using a discriminator",
         )
 
-    def test_inline_schema(self, warnings):
-        assert_bad_schema_warning(
-            warnings,
+    def test_inline_schema(self, generated_client):
+        assert_bad_schema(
+            generated_client,
             "WithInlineSchema",
             "Inline schema declarations are not allowed when using a discriminator",
         )
