@@ -41,13 +41,13 @@ jobs:
 
       - name: Run pytest without coverage
         if: matrix.os != 'ubuntu-latest'
-        run: task unit
+        run: poetry run task unit
         env:
           TASKIPY: true
 
       - name: Run pytest with coverage
         if: matrix.os == 'ubuntu-latest'
-        run: task code_coverage
+        run: poetry run task code_coverage
         env:
           TASKIPY: true
       
