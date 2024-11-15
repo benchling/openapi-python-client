@@ -152,28 +152,70 @@ components:
 """)
 @with_generated_code_imports(
     ".models.MyEnum",
-    ".models.MyEnumIncludingNullType1", # see comment in test_nullable_enum_prop
+    ".models.MyEnumIncludingNull",
     ".models.MyModel",
     ".types.Unset",
 )
 class TestNullableEnums:
-    def test_nullable_enum_prop(self, MyModel, MyEnum, MyEnumIncludingNullType1):
-        # Note, MyEnumIncludingNullType1 should be named just MyEnumIncludingNull -
-        # known bug: https://github.com/openapi-generators/openapi-python-client/issues/1120
+    def test_nullable_enum_prop(self, MyModel, MyEnum, MyEnumIncludingNull):
         assert_model_decode_encode(MyModel, {"nullableEnumProp": "b"}, MyModel(nullable_enum_prop=MyEnum.B))
         assert_model_decode_encode(MyModel, {"nullableEnumProp": None}, MyModel(nullable_enum_prop=None))
         assert_model_decode_encode(
             MyModel,
             {"enumIncludingNullProp": "a"},
-            MyModel(enum_including_null_prop=MyEnumIncludingNullType1.A),
+            MyModel(enum_including_null_prop=MyEnumIncludingNull.A),
         )
         assert_model_decode_encode( MyModel, {"enumIncludingNullProp": None}, MyModel(enum_including_null_prop=None))
         assert_model_decode_encode(MyModel, {"nullOnlyEnumProp": None}, MyModel(null_only_enum_prop=None))
     
-    def test_type_hints(self, MyModel, MyEnum, Unset):
-        expected_type = Union[MyEnum, None, Unset]
-        assert_model_property_type_hint(MyModel, "nullable_enum_prop", expected_type)
+    def test_type_hints(self, MyModel, MyEnum, MyEnumIncludingNull, Unset):
+        assert_model_property_type_hint(MyModel, "nullable_enum_prop", Union[MyEnum, None, Unset])
+        assert_model_property_type_hint(MyModel, "enum_including_null_prop", Union[MyEnumIncludingNull, None, Unset])
+        assert_model_property_type_hint(MyModel, "null_only_enum_prop", Union[None, Unset])
+
+
+@with_generated_client_fixture(
+"""
+openapi: 3.0.0
+
+components:
+  schemas:
+    MyEnum:
+      type: string
+      enum: ["a", "b"]
+    MyEnumIncludingNull:
+      type: string
+      nullable: true
+      enum: ["a", "b", null]
+    MyModel:
+      properties:
+        nullableEnumProp:
+          allOf:
+            - {"$ref": "#/components/schemas/MyEnum"}
+          nullable: true
+        enumIncludingNullProp: {"$ref": "#/components/schemas/MyEnumIncludingNull"}
+""")
+@with_generated_code_imports(
+    ".models.MyEnum",
+    ".models.MyEnumIncludingNull",
+    ".models.MyModel",
+    ".types.Unset",
+)
+class TestNullableEnumsInOpenAPI30:
+    def test_nullable_enum_prop(self, MyModel, MyEnum, MyEnumIncludingNull):
+        assert_model_decode_encode(MyModel, {"nullableEnumProp": "b"}, MyModel(nullable_enum_prop=MyEnum.B))
+        assert_model_decode_encode(MyModel, {"nullableEnumProp": None}, MyModel(nullable_enum_prop=None))
+        assert_model_decode_encode(
+            MyModel,
+            {"enumIncludingNullProp": "a"},
+            MyModel(enum_including_null_prop=MyEnumIncludingNull.A),
+        )
+        assert_model_decode_encode( MyModel, {"enumIncludingNullProp": None}, MyModel(enum_including_null_prop=None))
     
+    def test_type_hints(self, MyModel, MyEnum, MyEnumIncludingNull, Unset):
+        assert_model_property_type_hint(MyModel, "nullable_enum_prop", Union[MyEnum, None, Unset])
+        assert_model_property_type_hint(MyModel, "enum_including_null_prop", Union[MyEnumIncludingNull, None, Unset])
+
 
 @with_generated_client_fixture(
 """
