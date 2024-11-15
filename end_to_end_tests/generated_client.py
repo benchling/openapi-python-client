@@ -45,6 +45,16 @@ class GeneratedClientContext:
         """Attempt to import a module from the generated code."""
         return importlib.import_module(f"{self.base_module}{module_path}")
 
+    def import_symbol(self, module_path: str, name: str) -> Any:
+        module = self.import_module(module_path)
+        try:
+            return getattr(module, name)
+        except AttributeError:
+            existing = ", ".join(name for name in dir(module) if not name.startswith("_"))
+            assert False, (
+                f"Couldn't find import \"{name}\" in \"{self.base_module}{module_path}\"."
+                f" Available imports in that module are: {existing}"
+            )
 
 def _run_command(
     command: str,

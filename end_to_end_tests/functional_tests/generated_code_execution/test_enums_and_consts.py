@@ -133,88 +133,22 @@ class TestIntEnumClass:
 """
 components:
   schemas:
-    MyEnum:
-      type: string
-      enum: ["a", "b"]
-    MyEnumIncludingNull:
-      type: ["string", "null"]
-      enum: ["a", "b", null]
-    MyNullOnlyEnum:
+    EnumOfNullOnly:
       enum: [null]
     MyModel:
       properties:
-        nullableEnumProp:
-          oneOf:
-            - {"$ref": "#/components/schemas/MyEnum"}
-            - type: "null"
-        enumIncludingNullProp: {"$ref": "#/components/schemas/MyEnumIncludingNull"}
-        nullOnlyEnumProp: {"$ref": "#/components/schemas/MyNullOnlyEnum"}
+        nullOnlyEnumProp: {"$ref": "#/components/schemas/EnumOfNullOnly"}
+      required: ["nullOnlyEnumProp"]
 """)
 @with_generated_code_imports(
-    ".models.MyEnum",
-    ".models.MyEnumIncludingNull",
     ".models.MyModel",
-    ".types.Unset",
 )
-class TestNullableEnums:
-    def test_nullable_enum_prop(self, MyModel, MyEnum, MyEnumIncludingNull):
-        assert_model_decode_encode(MyModel, {"nullableEnumProp": "b"}, MyModel(nullable_enum_prop=MyEnum.B))
-        assert_model_decode_encode(MyModel, {"nullableEnumProp": None}, MyModel(nullable_enum_prop=None))
-        assert_model_decode_encode(
-            MyModel,
-            {"enumIncludingNullProp": "a"},
-            MyModel(enum_including_null_prop=MyEnumIncludingNull.A),
-        )
-        assert_model_decode_encode( MyModel, {"enumIncludingNullProp": None}, MyModel(enum_including_null_prop=None))
+class TestSingleValueNullEnum:
+    def test_enum_of_null_only(self, MyModel):
         assert_model_decode_encode(MyModel, {"nullOnlyEnumProp": None}, MyModel(null_only_enum_prop=None))
     
-    def test_type_hints(self, MyModel, MyEnum, MyEnumIncludingNull, Unset):
-        assert_model_property_type_hint(MyModel, "nullable_enum_prop", Union[MyEnum, None, Unset])
-        assert_model_property_type_hint(MyModel, "enum_including_null_prop", Union[MyEnumIncludingNull, None, Unset])
-        assert_model_property_type_hint(MyModel, "null_only_enum_prop", Union[None, Unset])
-
-
-@with_generated_client_fixture(
-"""
-openapi: 3.0.0
-
-components:
-  schemas:
-    MyEnum:
-      type: string
-      enum: ["a", "b"]
-    MyEnumIncludingNull:
-      type: string
-      nullable: true
-      enum: ["a", "b", null]
-    MyModel:
-      properties:
-        nullableEnumProp:
-          allOf:
-            - {"$ref": "#/components/schemas/MyEnum"}
-          nullable: true
-        enumIncludingNullProp: {"$ref": "#/components/schemas/MyEnumIncludingNull"}
-""")
-@with_generated_code_imports(
-    ".models.MyEnum",
-    ".models.MyEnumIncludingNull",
-    ".models.MyModel",
-    ".types.Unset",
-)
-class TestNullableEnumsInOpenAPI30:
-    def test_nullable_enum_prop(self, MyModel, MyEnum, MyEnumIncludingNull):
-        assert_model_decode_encode(MyModel, {"nullableEnumProp": "b"}, MyModel(nullable_enum_prop=MyEnum.B))
-        assert_model_decode_encode(MyModel, {"nullableEnumProp": None}, MyModel(nullable_enum_prop=None))
-        assert_model_decode_encode(
-            MyModel,
-            {"enumIncludingNullProp": "a"},
-            MyModel(enum_including_null_prop=MyEnumIncludingNull.A),
-        )
-        assert_model_decode_encode( MyModel, {"enumIncludingNullProp": None}, MyModel(enum_including_null_prop=None))
-    
-    def test_type_hints(self, MyModel, MyEnum, MyEnumIncludingNull, Unset):
-        assert_model_property_type_hint(MyModel, "nullable_enum_prop", Union[MyEnum, None, Unset])
-        assert_model_property_type_hint(MyModel, "enum_including_null_prop", Union[MyEnumIncludingNull, None, Unset])
+    def test_type_hints(self, MyModel):
+        assert_model_property_type_hint(MyModel, "null_only_enum_prop", None)
 
 
 @with_generated_client_fixture(
@@ -259,6 +193,8 @@ class TestConst:
 
 @with_generated_client_fixture(
 """
+# Tests of literal_enums mode, where enums become a typing.Literal type instead of a class
+
 components:
   schemas:
     MyEnum:
@@ -303,6 +239,8 @@ class TestStringLiteralEnum:
 
 @with_generated_client_fixture(
 """
+# Tests of literal_enums mode, where enums become a typing.Literal type instead of a class
+
 components:
   schemas:
     MyEnum:
@@ -347,6 +285,8 @@ class TestIntLiteralEnum:
 
 @with_generated_client_fixture(
 """
+# Similar to some of the "union with null" tests in test_unions.py, but in literal_enums mode
+
 components:
   schemas:
     MyEnum:
