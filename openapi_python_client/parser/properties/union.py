@@ -97,15 +97,11 @@ class UnionProperty(PropertyProtocol):
         def _add_index_suffix_to_variant_names(index: int) -> str:
             return f"{name}_type_{index}"
 
-        def _use_same_name_as_parent(index: int) -> str:
-            return name
-
         def process_items(
-            variant_name_from_index_func: Callable[[int], str],
+            variant_name_from_index_func: Callable[[int], str] = _add_index_suffix_to_variant_names,
         ) -> tuple[list[PropertyProtocol] | PropertyError, Schemas]:
             props: list[PropertyProtocol] = []
             new_schemas = schemas
-            schemas_with_classes: list[oai.Schema | oai.Reference] = []
             for i, sub_prop_data in enumerate(chain(data.anyOf, data.oneOf, type_list_data)):
                 sub_prop_name = variant_name_from_index_func(i)
 
@@ -129,11 +125,11 @@ class UnionProperty(PropertyProtocol):
                 # "my_model_union_thing_type_0" and "my_model_union_thing_type_1" for the two variants,
                 # and their model classes will be MyModelUnionThingType0 and MyModelUnionThingType1.
                 #
-                # However, in this example, if the second variant was just "type: null" instead of an
-                # object (i.e. if unionThing is a nullable object value)... then it would be friendlier
-                # to call the first variant's class just MyModelUnionThing, not MyModelUnionThingType0.
-                # We'll check for that special case below; we can't know if that's the situation until
-                # after we've processed all the variants.
+                # However, in this example, if the second variant was just a scalar type instead of an
+                # object (like "type: null" or "type: string"), so that the first variant is the only
+                # one that needs a class... then it would be friendlier to call the first variant's
+                # class just MyModelUnionThing, not MyModelUnionThingType0. We'll check for that special
+                # case below; we can't know if that's the situation until after we've processed them all.
 
                 sub_prop, new_schemas = property_from_data(
                     name=sub_prop_name,
@@ -145,23 +141,30 @@ class UnionProperty(PropertyProtocol):
                 )
                 if isinstance(sub_prop, PropertyError):
                     return PropertyError(detail=f"Invalid property in union {name}", data=sub_prop_data), new_schemas
-                if isinstance(sub_prop, HasNamedClass):
-                    schemas_with_classes.append(sub_prop_data)
                 props.append(sub_prop)
 
             return props, new_schemas
 
-        sub_properties, schemas = process_items(_add_index_suffix_to_variant_names)
+        sub_properties, new_schemas = process_items()
+        # Here's the check for the special case described above. If just one of the variants is
+        # an inline schema whose name matters, then we'll re-process them to simplify the naming.
+        # Unfortunately we do have to re-process them all; we can't just modify that one variant
+        # in place, because new_schemas already contains several references to its old name.
+        if (
+            not isinstance(sub_properties, PropertyError)
+            and len([p for p in sub_properties if isinstance(p, HasNamedClass)]) == 1
+        ):
+            def _use_same_name_as_parent_for_that_one_variant(index: int) -> str:
+                for i, p in enumerate(sub_properties):
+                    if i == index and isinstance(p, HasNamedClass):
+                        return name
+                return _add_index_suffix_to_variant_names(index)
+
+            sub_properties, new_schemas = process_items(_use_same_name_as_parent_for_that_one_variant)
+
         if isinstance(sub_properties, PropertyError):
             return sub_properties, schemas
-        
-        # Here's the check for the special case described above. If the variants are just "inline
-        # object or enum" and "null", we'll re-process them to adjust the naming.
-        if (len([p for p in sub_properties if isinstance(p, HasNamedClass)]) == 1 and
-            len([p for p in sub_properties if isinstance(p, NoneProperty)]) == 1):
-            sub_properties, schemas = process_items(_use_same_name_as_parent)
-            if isinstance(sub_properties, PropertyError):
-                return sub_properties, schemas
+        schemas = new_schemas
 
         sub_properties, discriminators_from_nested_unions = _flatten_union_properties(sub_properties)
 
