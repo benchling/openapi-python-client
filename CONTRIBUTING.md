@@ -37,6 +37,12 @@ The project uses ruff. `poetry run task lint` and `poetry run task format` run `
 
 This section is a copy from the upstream repo, with some changes due to Benchling test framework additions that haven't yet been accepted upstream.
 
+### Setting up a Dev Environment
+
+1. Make sure you have [PDM](https://pdm-project.org) installed and up to date.
+2. Make sure you have a supported Python version (e.g. 3.13) installed.
+3. Use `pdm install` in the project directory to create a virtual environment with the relevant dependencies.
+
 ### Writing tests
 
 All changes must be tested, I recommend writing the test first, then writing the code to make it pass. 100% code coverage is enforced in CI, a check will fail in GitHub if your code does not have 100% coverage. An HTML report will be added to the test artifacts in this case to help you locate missed lines.

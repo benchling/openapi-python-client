@@ -5,8 +5,6 @@ from typing import Any, Callable, ClassVar, Mapping, OrderedDict, cast
 
 from attr import define, evolve
 
-from openapi_python_client.parser.properties.none import NoneProperty
-
 from ... import Config
 from ... import schema as oai
 from ...utils import PythonIdentifier
