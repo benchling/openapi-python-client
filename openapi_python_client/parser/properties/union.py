@@ -5,8 +5,6 @@ from typing import Any, Callable, ClassVar, Mapping, OrderedDict, cast
 
 from attr import define, evolve
 
-from openapi_python_client.parser.properties.none import NoneProperty
-
 from ... import Config
 from ... import schema as oai
 from ...utils import PythonIdentifier
@@ -154,6 +152,7 @@ class UnionProperty(PropertyProtocol):
             not isinstance(sub_properties, PropertyError)
             and len([p for p in sub_properties if isinstance(p, HasNamedClass)]) == 1
         ):
+
             def _use_same_name_as_parent_for_that_one_variant(index: int) -> str:
                 for i, p in enumerate(sub_properties):
                     if i == index and isinstance(p, HasNamedClass):
