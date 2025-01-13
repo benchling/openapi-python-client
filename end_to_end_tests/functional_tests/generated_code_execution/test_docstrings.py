@@ -78,9 +78,9 @@ class TestSchemaWithDocstringsOnAttributesOption:
         # to appear there, and it will be recognized by documentation tools. So we'll assert
         # that these strings appear in the source code. The code should look like this:
         #     class MyModel:
-        #         """I like this type."
+        #         """I like this type."""
         #         prop1: str
-        #         """This attribute has a description"
+        #         """This attribute has a description"""
         #         prop2: str
         # 
         source_file_path = generated_client.output_path / generated_client.base_module / "models" / "my_model.py"
