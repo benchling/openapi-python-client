@@ -268,6 +268,7 @@ class AuthenticatedClient:
         """Exit a context manager for underlying httpx.AsyncClient (see httpx docs)"""
         await self.get_async_httpx_client().__aexit__(*args, **kwargs)
 
+
 def replace_client_path(client: Client, base_path: str) -> Client:
     """Override a client's base URL with a new path. Does not update scheme, host, or other URL parts."""
     parsed = urllib.parse.urlparse(client.base_url)
