@@ -3,7 +3,7 @@ from typing import Any, Optional, Union
 
 import httpx
 from attrs import define, evolve, field
-
+import urllib.parse
 
 @define
 class Client:
@@ -266,3 +266,25 @@ class AuthenticatedClient:
     async def __aexit__(self, *args: Any, **kwargs: Any) -> None:
         """Exit a context manager for underlying httpx.AsyncClient (see httpx docs)"""
         await self.get_async_httpx_client().__aexit__(*args, **kwargs)
+
+def replace_client_path(client: Client, base_path: str) -> Client:
+    """Override a client's base URL with a new path. Does not update scheme, host, or other URL parts."""
+    parsed = urllib.parse.urlparse(client.base_url)
+    # _replace is not private, it's part of the NamedTuple API but prefixed _ to avoid conflicts
+    updated_url = parsed._replace(path=base_path)
+    return client.with_base_url(updated_url.geturl())
+
+
+def v3_stable_client(client: Client) -> Client:
+    """Override a client's base URL with a v2 stable path."""
+    return replace_client_path(client, "api/v3-draft")
+
+
+def v3_alpha_client(client: Client) -> Client:
+    """Override a client's base URL with a v2-alpha path."""
+    return replace_client_path(client, "api/v3-alpha")
+
+
+def v3_beta_client(client: Client) -> Client:
+    """Override a client's base URL with a v2-beta path."""
+    return replace_client_path(client, "api/v3-beta")

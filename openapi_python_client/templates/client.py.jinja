@@ -212,4 +212,3 @@ def v3_alpha_client(client: Client) -> Client:
 def v3_beta_client(client: Client) -> Client:
     """Override a client's base URL with a v2-beta path."""
     return replace_client_path(client, "api/v3-beta")
-

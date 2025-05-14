@@ -1,0 +1,7 @@
+class_overrides:
+  Class1: {class_name: ExampleClass, module_name: example_module}
+  Class2: {class_name: DifferentClass, module_name: different_module}
+field_prefix: blah
+package_name_override: package_name
+package_version_override: package_version
+project_name_override: project-name
