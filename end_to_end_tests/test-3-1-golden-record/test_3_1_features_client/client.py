@@ -277,6 +277,7 @@ def replace_client_path(client: Client, base_path: str) -> Client:
     client._base_url = updated_url.geturl()
     return client
 
+
 def v3_stable_client(client: Client) -> Client:
     """Override a client's base URL with a v2 stable path."""
     return replace_client_path(client, "api/v3-draft")
