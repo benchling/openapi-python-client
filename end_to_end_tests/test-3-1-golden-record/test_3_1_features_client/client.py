@@ -274,6 +274,7 @@ def replace_client_path(client: Client, base_path: str) -> Client:
     parsed = urllib.parse.urlparse(client.base_url)
     # _replace is not private, it's part of the NamedTuple API but prefixed _ to avoid conflicts
     updated_url = parsed._replace(path=base_path)
+    client.base_url = updated_url.geturl()
     return client.with_base_url(updated_url.geturl())
 
 
