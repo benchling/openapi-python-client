@@ -271,7 +271,7 @@ class AuthenticatedClient:
 
 def replace_client_path(client: Client, base_path: str) -> Client:
     """Override a client's base URL with a new path. Does not update scheme, host, or other URL parts."""
-    parsed = urllib.parse.urlparse(client.base_url)
+    parsed = urllib.parse.urlparse(client._base_url)
     # _replace is not private, it's part of the NamedTuple API but prefixed _ to avoid conflicts
     updated_url = parsed._replace(path=base_path)
     client._base_url = updated_url.geturl()
