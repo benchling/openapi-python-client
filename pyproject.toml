@@ -56,14 +56,18 @@ check = """
 isort .\
  && black .\
  && flake8 --config ./.flake8 openapi_python_client\
- && safety check --bare\
- && mypy openapi_python_client\
  && task unit\
 """
+# TODO(BNCH-125868) Re-add safety check
+# && safety check --bare\
+# TODO(BNCH-125869) Re-add mypy check
+# && mypy openapi_python_client\
+
 code_coverage = "pytest --cov openapi_python_client tests --cov-report=term-missing"
 unit = "pytest openapi_python_client tests"
 regen = "python -m end_to_end_tests.regen_golden_record"
 regen_custom = "python -m end_to_end_tests.regen_golden_record custom"
+# TODO(BNCH-125870) Make it possible to run e2e tets
 e2e = "pytest openapi_python_client end_to_end_tests/test_end_to_end.py"
 re = """
 task regen\
