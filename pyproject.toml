@@ -55,7 +55,7 @@ types-PyYAML = "^6.0.8"
 check = """
 isort .\
  && black .\
- && flake8 openapi_python_client\
+ && flake8 --config ./.flake8 openapi_python_client\
  && safety check --bare\
  && mypy openapi_python_client\
  && task unit\
