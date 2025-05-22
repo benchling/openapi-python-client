@@ -142,3 +142,7 @@ def update(
 
     errors = update_existing_client(url=url, path=path, custom_template_path=custom_template_path)
     handle_errors(errors)
+
+
+if __name__ == "__main__":
+    app()
