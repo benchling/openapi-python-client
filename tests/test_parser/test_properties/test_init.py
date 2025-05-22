@@ -628,6 +628,8 @@ class TestPropertyFromData:
             description="",
             relative_imports=set(),
             additional_properties=False,
+            discriminator_property=None,
+            discriminator_mappings={},
         )
         schemas = Schemas(models={class_name: existing_model})
 
@@ -645,6 +647,8 @@ class TestPropertyFromData:
             description="",
             relative_imports=set(),
             additional_properties=False,
+            discriminator_property=None,
+            discriminator_mappings={},
         )
         assert schemas == new_schemas
 
@@ -1170,6 +1174,8 @@ def test_build_model_property(additional_properties_schema, expected_additional_
             "from typing import Union",
         },
         additional_properties=expected_additional_properties,
+        discriminator_property=None,
+        discriminator_mappings={},
     )
 
 
