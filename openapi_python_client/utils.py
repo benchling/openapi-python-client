@@ -1,7 +1,25 @@
+from __future__ import annotations
+
 import re
 from keyword import iskeyword
+from typing import Any
 
 import stringcase
+
+
+class ClassName(str):
+    """A PascalCase string which has been validated / transformed into a valid class name for Python"""
+
+    def __new__(cls, value: str, prefix: str) -> ClassName:
+        new_value = fix_keywords(pascal_case(sanitize(value)))
+
+        if not new_value.isidentifier():
+            value = f"{prefix}{new_value}"
+            new_value = fix_keywords(pascal_case(sanitize(value)))
+        return str.__new__(cls, new_value)
+
+    def __deepcopy__(self, _: Any) -> ClassName:
+        return self
 
 
 def sanitize(value: str) -> str:
