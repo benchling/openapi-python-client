@@ -41,3 +41,10 @@ class PropertyError(ParseError):
 
 class ValidationError(Exception):
     pass
+
+
+@dataclass
+class ParameterError(ParseError):
+    """Error raised when there's a problem creating a Parameter."""
+
+    header = "Problem creating a Parameter: "
