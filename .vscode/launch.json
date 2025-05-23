@@ -18,8 +18,6 @@
                 "--custom-template-path",
                 "../aurelia/packages/api_client_generation/client_gen/templates"
             ],
-            // "console": "integratedTerminal",
-            "python": "/Users/peter.goldstein/Library/Caches/pypoetry/virtualenvs/openapi-python-client-gtMxGyzm-py3.9/bin/python"
         }
     ]
 }
