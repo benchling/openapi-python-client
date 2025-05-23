@@ -1,3 +1,7 @@
 {
-    "python.defaultInterpreterPath": "/Users/peter.goldstein/Library/Caches/pypoetry/virtualenvs/openapi-python-client-gtMxGyzm-py3.9/bin/python"
+  "editor.rulers": [120],
+  "mypy-type-checker.args": ["--config-file=mypy.ini"],
+  "python.testing.pytestArgs": ["openapi_python_client", "tests"],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false
 }
