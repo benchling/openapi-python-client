@@ -102,8 +102,9 @@ class Project:
 
     def _reformat(self) -> None:
         subprocess.run(
-            "autoflake -i -r --remove-all-unused-imports --remove-unused-variables --ignore-init-module-imports .",
-            cwd=self.package_dir,
+            "autoflake -i -r --remove-all-unused-imports --remove-unused-variables "
+            f"--ignore-init-module-imports {self.package_dir.as_posix()}",
+            cwd=self.project_dir,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
