@@ -2,18 +2,19 @@ _property = property  # isort: skip
 
 from itertools import chain
 from typing import Any, ClassVar, Dict, Generic, Iterable, Iterator, List, Optional, Set, Tuple, TypeVar, Union
+from xml.etree.ElementTree import ParseError
 
 import attr
 
 from ... import schema as oai
 from ... import utils
-from ..errors import PropertyError, ValidationError
+from ..errors import ParameterError, PropertyError, ValidationError
 from ..reference import Reference
 from .converter import convert, convert_chain
 from .enum_property import EnumProperty
 from .model_property import ModelProperty
 from .property import Property
-from .schemas import Schemas
+from .schemas import Parameters, Schemas, parse_reference_path, update_parameters_with_data
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -671,3 +672,44 @@ def build_schemas(*, components: Dict[str, Union[oai.Reference, oai.Schema]]) ->
     schemas.errors.extend(errors)
     schemas.errors.extend(resolve_errors)
     return schemas
+
+
+def build_parameters(
+    *,
+    components: Dict[str, Union[oai.Reference, oai.Parameter]],
+) -> Parameters:
+    """Get a list of Parameters from an OpenAPI dict"""
+    parameters = Parameters()
+    to_process: Iterable[Tuple[str, Union[oai.Reference, oai.Parameter]]] = []
+    if components is not None:
+        to_process = components.items()
+    still_making_progress = True
+    errors: list[ParameterError] = []
+
+    # References could have forward References so keep going as long as we are making progress
+    while still_making_progress:
+        still_making_progress = False
+        errors = []
+        next_round = []
+        # Only accumulate errors from the last round, since we might fix some along the way
+        for name, data in to_process:
+            if isinstance(data, oai.Reference):
+                parameters.errors.append(ParameterError(data=data, detail="Reference parameters are not supported."))
+                continue
+            ref_path = parse_reference_path(f"#/components/parameters/{name}")
+            if isinstance(ref_path, ParseError):
+                parameters.errors.append(ParameterError(detail=ref_path.detail, data=data))
+                continue
+            parameters_or_err = update_parameters_with_data(
+                ref_path=ref_path, data=data, parameters=parameters
+            )
+            if isinstance(parameters_or_err, ParameterError):
+                next_round.append((name, data))
+                errors.append(parameters_or_err)
+                continue
+            parameters = parameters_or_err
+            still_making_progress = True
+        to_process = next_round
+
+    parameters.errors.extend(errors)
+    return parameters

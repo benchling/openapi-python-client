@@ -5,10 +5,20 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import ValidationError
 
+from .properties.schemas import Parameters, parameter_from_reference
+
 from .. import schema as oai
 from .. import utils
 from .errors import GeneratorError, ParseError, PropertyError
-from .properties import EnumProperty, ModelProperty, Property, Schemas, build_schemas, property_from_data
+from .properties import (
+    EnumProperty,
+    ModelProperty,
+    Property,
+    Schemas,
+    build_parameters,
+    build_schemas,
+    property_from_data,
+)
 from .reference import Reference
 from .responses import Response, response_from_data
 
@@ -36,7 +46,7 @@ class EndpointCollection:
 
     @staticmethod
     def from_data(
-        *, data: Dict[str, oai.PathItem], schemas: Schemas
+        *, data: Dict[str, oai.PathItem], schemas: Schemas, parameters: Parameters
     ) -> Tuple[Dict[str, "EndpointCollection"], Schemas]:
         """ Parse the openapi paths data to get EndpointCollections by tag """
         endpoints_by_tag: Dict[str, EndpointCollection] = {}
@@ -51,7 +61,7 @@ class EndpointCollection:
                 tag = (operation.tags or ["default"])[0]
                 collection = endpoints_by_tag.setdefault(tag, EndpointCollection(tag=tag))
                 endpoint, schemas = Endpoint.from_data(
-                    data=operation, path=path, method=method, tag=tag, schemas=schemas
+                    data=operation, path=path, method=method, tag=tag, schemas=schemas, parameters=parameters
                 )
                 if isinstance(endpoint, ParseError):
                     endpoint.header = (
@@ -217,14 +227,26 @@ class Endpoint:
 
     @staticmethod
     def _add_parameters(
-        *, endpoint: "Endpoint", data: oai.Operation, schemas: Schemas
+        *,
+        endpoint: "Endpoint",
+        data: oai.Operation,
+        schemas: Schemas,
+        parameters: Parameters,
     ) -> Tuple[Union["Endpoint", ParseError], Schemas]:
         endpoint = deepcopy(endpoint)
         if data.parameters is None:
             return endpoint, schemas
+
         for param in data.parameters:
-            if isinstance(param, oai.Reference) or param.param_schema is None:
+            # Obtain the parameter from the reference or just the parameter itself
+            param_or_error = parameter_from_reference(param=param, parameters=parameters)
+            if isinstance(param_or_error, ParseError):
+                return param_or_error, schemas
+            param = param_or_error  # noqa: PLW2901
+
+            if param.param_schema is None:
                 continue
+
             prop, schemas = property_from_data(
                 name=param.name,
                 required=param.required,
@@ -248,7 +270,7 @@ class Endpoint:
 
     @staticmethod
     def from_data(
-        *, data: oai.Operation, path: str, method: str, tag: str, schemas: Schemas
+        *, data: oai.Operation, path: str, method: str, tag: str, schemas: Schemas, parameters: Parameters
     ) -> Tuple[Union["Endpoint", ParseError], Schemas]:
         """ Construct an endpoint from the OpenAPI data """
 
@@ -266,7 +288,7 @@ class Endpoint:
             tag=tag,
         )
 
-        result, schemas = Endpoint._add_parameters(endpoint=endpoint, data=data, schemas=schemas)
+        result, schemas = Endpoint._add_parameters(endpoint=endpoint, data=data, schemas=schemas, parameters=parameters)
         if isinstance(result, ParseError):
             return result, schemas
         result, schemas = Endpoint._add_responses(endpoint=result, data=data.responses, schemas=schemas)
@@ -298,7 +320,13 @@ class GeneratorData:
             schemas = Schemas()
         else:
             schemas = build_schemas(components=openapi.components.schemas)
-        endpoint_collections_by_tag, schemas = EndpointCollection.from_data(data=openapi.paths, schemas=schemas)
+        if openapi.components is None or openapi.components.parameters is None:
+            parameters = Parameters()
+        else:
+            parameters = build_parameters(components=openapi.components.parameters)
+        endpoint_collections_by_tag, schemas = EndpointCollection.from_data(
+            data=openapi.paths, schemas=schemas, parameters=parameters
+        )
         enums = schemas.enums
 
         return GeneratorData(
