@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "openapi-python-client"
+name = "benchling-openapi-python-client"
 # Our versions have diverged and have no relation to upstream code changes
 # Henceforth, benchling-openapi-python-package will be maintained internally
 version = "1.0.7"
