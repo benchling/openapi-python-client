@@ -700,9 +700,7 @@ def build_parameters(
             if isinstance(ref_path, ParseError):
                 parameters.errors.append(ParameterError(detail=ref_path.detail, data=data))
                 continue
-            parameters_or_err = update_parameters_with_data(
-                ref_path=ref_path, data=data, parameters=parameters
-            )
+            parameters_or_err = update_parameters_with_data(ref_path=ref_path, data=data, parameters=parameters)
             if isinstance(parameters_or_err, ParameterError):
                 next_round.append((name, data))
                 errors.append(parameters_or_err)
