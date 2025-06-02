@@ -7,10 +7,9 @@ import attr
 
 from ... import schema as oai
 from ...schema.parameter import Parameter
-
+from ...utils import ClassName
 from ..errors import ParameterError, ParseError
 from .enum_property import EnumProperty
-from ...utils import ClassName
 from .model_property import ModelProperty
 
 ReferencePath = NewType("ReferencePath", str)

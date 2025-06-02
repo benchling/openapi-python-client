@@ -1,7 +1,7 @@
-from openapi_python_client.parser.properties.schemas import Parameters, ReferencePath
 import openapi_python_client.schema as oai
 from openapi_python_client import GeneratorError
 from openapi_python_client.parser.errors import ParseError
+from openapi_python_client.parser.properties.schemas import Parameters, ReferencePath
 
 MODULE_NAME = "openapi_python_client.parser.openapi"
 
