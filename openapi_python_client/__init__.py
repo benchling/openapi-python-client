@@ -27,7 +27,7 @@ else:
 # Benchling renames the package to avoid publishing naming collision
 # This can lead to importlib.metadata.PackageNotFoundError: openapi_python_client
 try:
-    __version__ = version(__package__)
+    __version__ = version("benchling_openapi_python_client")
 except Exception:
     pass
 

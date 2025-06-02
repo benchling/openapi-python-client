@@ -5,8 +5,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import ValidationError
 
-from .properties.schemas import Parameters, parameter_from_reference
-
 from .. import schema as oai
 from .. import utils
 from .errors import GeneratorError, ParseError, PropertyError
@@ -19,6 +17,7 @@ from .properties import (
     build_schemas,
     property_from_data,
 )
+from .properties.schemas import Parameters, parameter_from_reference
 from .reference import Reference
 from .responses import Response, response_from_data
 

@@ -7,10 +7,9 @@ import attr
 
 from ... import schema as oai
 from ...schema.parameter import Parameter
-
+from ...utils import ClassName
 from ..errors import ParameterError, ParseError
 from .enum_property import EnumProperty
-from ...utils import ClassName
 from .model_property import ModelProperty
 
 ReferencePath = NewType("ReferencePath", str)
@@ -51,7 +50,6 @@ class Parameters:
 def parameter_from_data(
     *,
     name: str,
-    required: bool,
     data: Union[oai.Reference, oai.Parameter],
     parameters: Parameters,
 ) -> Tuple[Union[Parameter, ParameterError], Parameters]:
@@ -65,7 +63,7 @@ def parameter_from_data(
 
     new_param = Parameter(
         name=name,
-        required=required,
+        required=data.required,
         explode=data.explode,
         style=data.style,
         param_schema=data.param_schema,
@@ -92,7 +90,7 @@ def update_parameters_with_data(
     See Also:
         - https://swagger.io/docs/specification/using-ref/
     """
-    param, parameters = parameter_from_data(data=data, name=data.name, parameters=parameters, required=True)
+    param, parameters = parameter_from_data(data=data, name=data.name, parameters=parameters)
 
     if isinstance(param, ParameterError):
         param.detail = f"{param.header}: {param.detail}"
