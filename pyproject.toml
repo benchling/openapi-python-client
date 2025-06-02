@@ -2,7 +2,7 @@
 name = "benchling-openapi-python-client"
 # Our versions have diverged and have no relation to upstream code changes
 # Henceforth, benchling-openapi-python-package will be maintained internally
-version = "1.0.7"
+version = "1.0.8"
 description = "Generate modern Python clients from OpenAPI"
 repository = "https://github.com/benchling/openapi-python-client"
 license = "MIT"
