@@ -40,7 +40,7 @@ autoflake = "^1.4"
 [tool.poetry.scripts]
 openapi-python-client = "openapi_python_client.cli:app"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 pytest-mock = "*"
 mypy = "*"
